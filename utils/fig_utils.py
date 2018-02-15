@@ -24,10 +24,10 @@ def create_weight_maps(data, feat_name, file, name):
     # Divide the data into the clusters
     plt.figure()
     xticks = range(np.shape(data)[0])
-    g = sns.heatmap(data=data.T,# vmin=0, vmax=1,
+    g = sns.heatmap(data=data.T,
                     yticklabels=feat_name, cmap="viridis", linewidths=0.0,
                     xticklabels=xticks, cbar=True)
-    plt.title("Cluster " + str(k))
+    plt.title("Weight maps")
     plt.yticks(rotation=30)
     g.tick_params(axis='y', labelsize=18)
     g.tick_params(axis='both', left='off', bottom='off')
@@ -40,9 +40,11 @@ def draw_space(space, clustercolor, file, dx):
     """ Create a two dimensional space with the coloring of the clusters"""
 
     # Cluster coloring
-    plt.scatter(space[:, 0], space[:, 1],
-                c=clustercolor, edgecolor='none', alpha=0.5, label=clustercolor,
-                cmap=plt.cm.get_cmap('spectral', 5))
+    for c in set(clustercolor):
+        sp = [s for (j, s) in enumerate(space) if clustercolor[j] == c]
+        sp = np.array(sp)
+        plt.scatter(sp[:, 0], sp[:, 1], edgecolor='none', alpha=0.5, label=c)
+    plt.legend()
     plt.savefig(file + 'figures/cluster_space.png', bbox_inches='tight')
     plt.close()
     # DX coloring
@@ -50,8 +52,6 @@ def draw_space(space, clustercolor, file, dx):
     colors = {'AD': 'red', 'LMCI': 'yellow', 'EMCI': 'yellow', 'SMC': 'green', 'CN': 'green'}
     plt.scatter(space[:, 0], space[:, 1],
                 c=dx.apply(lambda x: colors[x]), edgecolor='none', alpha=0.9,
-                cmap=plt.cm.get_cmap('spectral', 10), s=6)
-    #plt.xlabel('component 1')
-    #plt.ylabel('component 2')
-    # plt.colorbar()
+                cmap=plt.cm.get_cmap('spectral', 10), s=10)
+    plt.legend()
     plt.savefig(file + 'figures/dx_space.png', bbox_inches='tight')

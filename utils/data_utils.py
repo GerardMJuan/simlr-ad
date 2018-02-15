@@ -59,6 +59,7 @@ def load_data(metadata, config):
         features.insert(loc=0, column='RID', value=features_base['RID'])
     elif data_type == "UCSD":
         features_base = pd.read_csv(config["data"]["data_ucsd"])
+        features_base = features_base[features_base.VISCODE == 'sc']
         # select only RID and features
         features = features_base.iloc[:, 10:-1]
         features = features.div(features_base.EICV, axis=0)

@@ -59,8 +59,9 @@ def compute_randomizedlasso(F_train, X_train, config, out_dir, feat_names):
         X = np.array(selected_rid[feat_names])
         Y = np.array(selected_rid["DX_bl"])
         Y = np.array([1.0 if x == 'AD' else -1.0 for x in Y])
-        rl = RandomizedLasso(n_resampling=1000, normalize=True,
-                             scaling=0.8, random_state=1714)
+        rl = RandomizedLasso(alpha='bic', n_resampling=500, fit_intercept=False,
+                             sample_fraction=0.85, scaling=0.1,
+                             random_state=1714)
         rl.fit(X, Y)
         scores.append(rl.scores_)
         clusters.append(i)

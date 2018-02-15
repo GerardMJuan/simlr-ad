@@ -65,6 +65,10 @@ def main():
         os.makedirs(out_dir + os.path.join('figures', ''))
     fig_dir = out_dir + os.path.join('figures', '')
 
+    # Create clusters directory
+    if not os.path.exists(out_dir + os.path.join('clusters_data', '')):
+        os.makedirs(out_dir + os.path.join('clusters_data', ''))
+
     # Save a copy of the configuration file into the experiments directory
     copy2(args.config_file[0], out_dir)
 
@@ -84,50 +88,95 @@ def main():
     # Prepare the data, normalize
     features.iloc[:, 1:] = features.iloc[:, 1:].apply(lambda x: (x - np.mean(x)) / np.std(x), axis=0)
 
+
     # First part of the pipeline: create the mixture model
     print("Creating clusters...")
     # List of columns defnining the covariates
-    model_cov = config["data"]["columns_cl"].split(',')
+    model_cov = metadata.iloc[:, 5:].columns.values.tolist()
+    model_cov.remove('DX_bl')
+    model_cov.remove('APOE4')
+    model_cov.remove('PTGENDER')
+
+    # Sanity check of mising data
     metadata.dropna(subset=model_cov, inplace=True)
 
-    metadata[model_cov] = metadata[model_cov].apply(lambda x: (x - np.mean(x)) / np.std(x), axis=0)
-
+    metadata[model_cov].to_csv('test.csv')
     print("Number of points to cluster :" + str(len(metadata)))
 
     # Select only a subset of the data to cluster, and then try to add the
     # tests points into the clustering.
 
     # CLUSTERING
-    X_train, X_test = train_test_split(metadata, test_size=0.25,
-                                       random_state=1714)
+    X_train_i, X_test = train_test_split(metadata, test_size=0.25,
+                                         random_state=1714)
+
+    X_train = X_train_i.copy()
+    X_train[model_cov] = X_train_i[model_cov].apply(lambda x: (x - np.mean(x)) / np.std(x), axis=0)
 
     # Cluster space analysis
     # Use the SIMLR feature ranking
     y, S, F, ydata, alpha = compute_simlr(np.array(X_train[model_cov]), nclusters)
     aggR, pval = feat_ranking(S, np.array(X_train[model_cov]))
 
-    draw_space(ydata, y, out_dir, X_train.DX_bl)
-    X_train['clusters'] = y
-    # feature space analysis
+    table_featordering = pd.DataFrame({'aggR': aggR, 'pval': pval})
 
+    table_featordering = table_featordering.sort_index(by='aggR')
+    table_featordering["name"] = model_cov
+    table_featordering = table_featordering.sort_index(by='pval')
+
+    table_featordering.to_csv(out_dir + 'feat_importance.csv')
+
+    draw_space(ydata, y, out_dir, X_train.DX_bl)
+    X_train_i['clusters'] = y
+    # feature space analysis
+    for c in range(1, nclusters + 1):
+        print('Cluster ' + str(c))
+        # For each cluster, do some analysis
+        X_cluster = X_train_i[X_train_i.clusters == c]
+        X_cluster = X_cluster[model_cov + ['DX_bl', 'MMSE']]
+        stats = pd.DataFrame(X_cluster.describe())
+        stats = stats.loc[['mean','std'], :].T
+        stats_DX = pd.DataFrame(X_cluster["DX_bl"].value_counts())
+        stats.to_csv(out_dir + '/clusters_data/cluster_' + str(c) + '.csv')
+        stats_DX.to_csv(out_dir + '/clusters_data/clusterdx_' + str(c) + '.csv')
     # We could try to do both an univariate test  And a randomized lasso test
     # To compare the selected features in each of the clusters.
+
+    # Can we represent it over brains?
+    scores, pval_univ, clusters = compute_univariate_test(features, X_train_i,
+                                                     config["univariate"],
+                                                     out_dir, feat_names)
+
+    scores_lasso, clusters = compute_randomizedlasso(features, X_train_i,
+                                                     config["lasso"], out_dir,
+                                                     feat_names)
 
     # Statistical tests over the importance of each feature in the original
     # space over the metadata
 
-    # Can we represent it over brains?
-    scores, pval, clusters = compute_univariate_test(features, X_train,
-                                                     config["univariate"],
-                                                     out_dir, feat_names)
+    X_aux = X_train_i[["RID"]]
+    X = features.merge(X_aux, 'inner', on='RID')
+    X = np.array(X[feat_names])
 
-    scores_lasso, clusters = compute_randomizedlasso(features, X_train,
-                                                     config["lasso"], out_dir,
-                                                     feat_names)
+    ## Need to select only the values in the original space for which
+    # we have available features
+    list_rid_og = features[["RID"]].values.tolist()
+    list_rid_new = X_aux.values.tolist()
+    indices = np.isin(list_rid_new, list_rid_og)
+    S_new = S[np.ix_(indices.flatten(), indices.flatten())]
+    aggR, pval = feat_ranking(S_new, X)
+    table_featordering = pd.DataFrame({'aggR': aggR, 'pval': pval})
+
+    table_featordering = table_featordering.sort_index(by='aggR')
+    table_featordering["name"] = feat_names
+    table_featordering = table_featordering.sort_index(by='pval')
+
+    table_featordering.to_csv(out_dir + 'feat_importance_MRI.csv')
+
     # save results in tables
-    table_scoresuniv = pd.DataFrame(scores.T, index = feat_names, columns=['1', '2', '3', '4' ,'5'])
-    table_scoreslasso = pd.DataFrame(scores_lasso.T, index = feat_names, columns=['1', '2', '3', '4' ,'5'])
-    table_pvaluniv = pd.DataFrame(np.array(pval).T, index = feat_names, columns=['1', '2', '3', '4' ,'5'])
+    table_scoresuniv = pd.DataFrame(scores.T, index = feat_names, columns=range(1,nclusters+1))
+    table_scoreslasso = pd.DataFrame(scores_lasso.T, index = feat_names, columns=range(1,nclusters+1))
+    table_pvaluniv = pd.DataFrame(np.array(pval_univ).T, index = feat_names, columns=range(1,nclusters+1))
 
     table_scoresuniv.to_csv(out_dir + 'results_scores_univ.csv')
     table_scoreslasso.to_csv(out_dir + 'results_scores_lasso.csv')
@@ -137,7 +186,6 @@ def main():
     create_weight_maps(scores_lasso, feat_names, out_dir, "lasso")
 
     # Classify using a linear SVM.
-
 
     print('Proces finished.')
     t1 = time.time()
