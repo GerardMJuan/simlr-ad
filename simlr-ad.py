@@ -24,6 +24,9 @@ from sklearn.model_selection import train_test_split
 from utils.stat_utils import compute_randomizedlasso, compute_univariate_test
 from utils.fig_utils import draw_space, create_weight_maps
 from utils.data_utils import load_data
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 # Adding input parameters.
 parser = argparse.ArgumentParser(description='Clustering classification.')
@@ -37,7 +40,7 @@ parser.add_argument("--output_directory_name", type=str, nargs=1,
 
 def main():
     """
-    Compute all the tasks of the LADCE procedure.
+    Compute all the tasks of the simlr-ad procedure.
 
     First baseline implementation of the model, with automatic
     selection of clusters.
@@ -100,6 +103,12 @@ def main():
     # Sanity check of mising data
     metadata.dropna(subset=model_cov, inplace=True)
 
+    # TEMPORAL do some computation
+    metadata["participant_id"] = ['sub-ADNI' + x.replace("_", "") for x in metadata.PTID.values]
+
+    metadata[["participant_id"]].to_csv('subjects.csv')
+
+
     metadata[model_cov].to_csv('test.csv')
     print("Number of points to cluster :" + str(len(metadata)))
 
@@ -113,10 +122,20 @@ def main():
     X_train = X_train_i.copy()
     X_train[model_cov] = X_train_i[model_cov].apply(lambda x: (x - np.mean(x)) / np.std(x), axis=0)
 
+    f, ax = plt.subplots(figsize=(12, 12))
+    sns.heatmap(X_train[model_cov], linewidths=.0, xticklabels=False, yticklabels=False, cbar=False, ax=ax)
+    plt.savefig("test.png")
+    plt.close()
+
+
     # Cluster space analysis
     # Use the SIMLR feature ranking
     y, S, F, ydata, alpha = compute_simlr(np.array(X_train[model_cov]), nclusters)
     aggR, pval = feat_ranking(S, np.array(X_train[model_cov]))
+
+    sns.clustermap(S, col_cluster=True, row_cluster=True, robust=True, method='average', metric='seuclidean', figsize=(20, 20))
+    plt.savefig("similarity.png")
+    plt.close()
 
     table_featordering = pd.DataFrame({'aggR': aggR, 'pval': pval})
 
