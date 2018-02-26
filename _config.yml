@@ -1,4 +1,4 @@
 theme: jekyll-theme-minimal
 title: AD Clustering subtyping
-description: Code for Data-driven clustering for AD disease subtyping characterization.
+description: ![Image1](figures/similarity.png). Code for Data-driven clustering for AD disease subtyping characterization.
 show_downloads: true
