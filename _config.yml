@@ -1,4 +1,4 @@
 theme: jekyll-theme-minimal
-title: Data-driven subtyping for Alzheimer's Disease in covariate space.
-description: Code for Data-driven clustering for AD disease subtyping characterization.\ Results presented in DTIC PhD Workshop 2018. 
+title: SIMLR-AD
+description: Implementation and experiments for "Data-driven clustering for AD disease subtyping characterization", poster presented in DTIC PhD Workshop 2018.
 show_downloads: true
