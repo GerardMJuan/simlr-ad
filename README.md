@@ -1,7 +1,7 @@
 # SIMLR_AD - Cluster subtpying for Alzheimer's Disease.
 
 ![Image1](figures/similarity.png)
-
+dfadsfasdfafdafdfadf
 Repository of the code implementing non-supervised clustering procedure [1]
 for Alzheimer's disease patients subtyping. This is very interesting.
 
@@ -24,7 +24,7 @@ Packages:
 - **figures/** contains the necessary files to reproduce the figures of the poster presented at ETIC PhD Workshop 2018.
 - **MATLAB/** contains the code for the SIMLR \[1\] procedure. Under the GNU GPL License.
 - **utils/** contains code necessary for the correct functionality of the main script.
-
+fdfdf
 ## Data
 Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented
 at ETIC PhD Workshop 2018, for reproducibility.
