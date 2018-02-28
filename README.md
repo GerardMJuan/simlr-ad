@@ -5,16 +5,21 @@
 Repository of the code implementing and applying a non-supervised clustering procedure \[1\]
 for Alzheimer's disease patients subtyping.
 
+## Introduction and motivation
 
-We want to cluster
+Alzheimer's disease (AD) is a neurodegenerative pathology, which degenerates the brain and causes cognitive deterioration and loss of memory. It is one of the biggest problems in public health in the world, and while many efforts have been inverted into studying the disease, its causes and its progression, much things about the disease are still not known.
 
-![Image1](figures/similarity.png)
+One interesting area to explore is disease subpying. Does the disease behaves differently between patients? If so, why? Answering those two questions mean:
+1. Identifying possible subgroups of the population where the disease behaves similarly.
+2. Identifying the factors that define those subgroups.
 
-This methodology can be applied to many others
+This project aims to solve those two questions. It tries to do this by clustering, using a non-supervised technique. over a space of non-typical AD covariates: data that is not used to diagnose the disease, but that can be obtained quite easily, such as plasma markers.
 
-Very very interesting indeed.
+Detecting relevant subtypes of the disease could lead to a more personalized early treatment. Moreover, if the characteristics defining those subtypes are non-invasive markers, we could be closer to a non-invasive disease diagnostic test. This methodology could be applied to other problems and diseases.
 
-All code under the GNU GPL license.
+This is a **work in progress**, so stay tuned!
+
+All code under the [GNU GPL license](LICENSE).
 
 ## Requeriments
 Python 2.7+ is required.
