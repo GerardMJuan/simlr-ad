@@ -31,7 +31,7 @@ Packages:
 ## Folder description:
 - **configs/** contains config files, needed for running the main script.
 - **data/** contains the necessary data to run the script.
-- **poster/** contains the original poster file, as well as a script to generate the figures, and a file named **dtic2018_ptid.csv**, which is the list of patients used to reproduce the results in the poster presented at ETIC PhD Workshop 2018.
+- **poster/** contains the original poster file, as well as a script to generate the figures, and a file named *dtic2018_ptid.csv*, which is the list of patients used to reproduce the results in the poster presented at ETIC PhD Workshop 2018.
 - **MATLAB/** contains the implementation of SIMLR \[1\]. Under the GNU GPL License.
 - **utils/** contains extra code necessary for the correct functionality of the main script.
 
@@ -39,11 +39,11 @@ Packages:
 Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented
 at ETIC PhD Workshop 2018, for reproducibility.
 
-Files needed for the experiment are as follows. The path indicated is respect to the ADNI website.
-- **UCSDVOL.csv** Disponible in Download/Study Data/Imaging/MR Image Analysis/UCSD - Derived Volumes [ADNI1]
-- **ADNIMERGE.csv** Disponible in Download/Study Data/Study Info/Data and Database/Key ADNI tables merged into one table
-- **adni_plasma_qc_multiplex_11Nov2010.csv** Disponible in: Download/Study Data/Biospecimen/Biospecimen Results/Biomarkers Consortium Plasma Proteomics Project RBM Multiplex Data and Primer (Zip file)
-- **VITALS.csv** Disponible in: Download/Study Data/Medical History/Physical/Neurological Exams/Vital Signs [ADNI1,GO,2,3]
+Files needed for the experiment are as follows. The shown path is respect to the ADNI website, where the data is situated.
+- **UCSDVOL.csv** Available in *Download/Study Data/Imaging/MR Image Analysis/UCSD - Derived Volumes [ADNI1]*
+- **ADNIMERGE.csv** Available in *Download/Study Data/Study Info/Data and Database/Key ADNI tables merged into one table*
+- **adni_plasma_qc_multiplex_11Nov2010.csv** Available in: *Download/Study Data/Biospecimen/Biospecimen Results/Biomarkers Consortium Plasma Proteomics Project RBM Multiplex Data and Primer (Zip file)*
+- **VITALS.csv** Available in: *Download/Study Data/Medical History/Physical/Neurological Exams/Vital Signs [ADNI1,GO,2,3]*
 
 ## Instructions:
 1. Place the corresponding files in the data/ directory.
@@ -51,7 +51,7 @@ Files needed for the experiment are as follows. The path indicated is respect to
 2. Run ```data/generate_cl_data.py``` to generate a file with the covariate data needed for the clustering. Script can be modified to include
    diferent covariates/patients.
 
-3. Define a config file with the experiment parameters. An already existing file, named **config_dtic2018.ini**, can be used to reproduce the results presented at ETIC PhD Workshop 2018.
+3. Define a config file with the experiment parameters. An already existing file, named *config_dtic2018.ini*, can be used to reproduce the results presented at ETIC PhD Workshop 2018.
 
 4. Execute simlr-ad.py. Example execution:
 ```
