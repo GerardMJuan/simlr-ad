@@ -1,4 +1,4 @@
 theme: jekyll-theme-minimal
-title: AD Clustering subtyping
-description: Code for Data-driven clustering for AD disease subtyping characterization.
+title: Data-driven subtyping for Alzheimer's Disease in covariate space.
+description: Code for Data-driven clustering for AD disease subtyping characterization.\ Results presented in DTIC PhD Workshop 2018. 
 show_downloads: true
