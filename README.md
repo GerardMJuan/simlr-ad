@@ -7,10 +7,10 @@ for Alzheimer's disease patients subtyping.
 
 ## Introduction and motivation
 
-Alzheimer's disease (AD) is a neurodegenerative pathology, which degenerates the brain and causes cognitive deterioration and loss of memory. It is one of the biggest problems in public health in the world, and while many efforts have been inverted into studying the disease, its causes and its progression, much things about the disease are still not known.
+Alzheimer's disease (AD) is a neurodegenerative pathology, which degenerates the brain and causes cognitive deterioration and loss of memory. It is one of the biggest problems in public health in the world, and while many efforts have been inverted into studying the disease, causes and progression paths, many things about the disease are still not known.
 
-One interesting area to explore is disease subpying. Does the disease behaves differently between patients? If so, why? Answering those two questions mean:
-1. Identifying possible subgroups of the population where the disease behaves similarly.
+One interesting area to explore is disease subpying. Does the disease behave differently between patients? If so, why? Answering those two questions mean:
+1. Identifying possible subgroups of the population where the disease progresses and behaves similarly.
 2. Identifying the factors that define those subgroups.
 
 ![Overview](poster/overview.png)
@@ -33,7 +33,7 @@ Packages:
  - seaborn
  - matplotlib
 
-[Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html) is also required.
+[Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html) is also required, as well as having MATLAB installed.
 
 ## Folder description:
 - **configs/** contains config files, needed for running the main script.
@@ -43,7 +43,7 @@ Packages:
 - **utils/** contains extra code necessary for the correct functionality of the main script.
 
 ## Data
-Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented
+Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed, researchers have to ask for access to the data directly to ADNI. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented
 at ETIC PhD Workshop 2018, for reproducibility.
 
 Files needed for the experiment are as follows. The shown path is respect to the ADNI website, where the data is situated.
@@ -64,7 +64,7 @@ Files needed for the experiment are as follows. The shown path is respect to the
 ```
 python simlr-ad.py --config_file configs/config_dtic2018.ini --clusters 3 --output_directory_name test_poster
 ```
-A new folder will be created in results/, with the name you have chosen, in the root directory of the project.
+A new folder will be created in *results/*, with the name you have chosen, in the root directory of the project.
 
 ### References
 \[1\]: Wang, B., Zhu, J., Pierson, E., Ramazzotti, D., & Batzoglou, S. (2017). Visualization and analysis of single-cell rna-seq data by kernel-based similarity learning. Nature Methods, 14(4), 414–416. http://doi.org/10.1038/nMeth.4207
