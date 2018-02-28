@@ -1,4 +1,7 @@
 theme: jekyll-theme-minimal
 title: SIMLR-AD
-description: Implementation and experiments for "Data-driven clustering for AD disease subtyping characterization", poster presented in DTIC PhD Workshop 2018.
+description: |
+    Implementation and experiments for "Data-driven clustering for AD disease subtyping characterization", poster presented in the [DTIC PhD Workshop 2018](https://www.upf.edu/web/etic_doctoral_workshop).
+    For any issues with the code, contact me at gerard.marti(at)upf.edu.
+    This project is under the [GNU GPLv3 license](https://www.gnu.org/licenses/gpl-3.0.en.html).
 show_downloads: true

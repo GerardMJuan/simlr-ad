@@ -8,6 +8,13 @@ import seaborn as sns
 import numpy as np
 
 
+def draw_sim_matrix(S, fig_dir):
+    sns.clustermap(S, col_cluster=True, row_cluster=True, robust=True,
+                   method='average', metric='seuclidean', figsize=(20, 20))
+    plt.savefig(fig_dir + "similarity.png")
+    plt.close()
+
+
 def create_weight_maps(data, feat_name, file, name):
     """
     Create, a map of the weights, for the cluster
@@ -54,4 +61,4 @@ def draw_space(space, clustercolor, file, dx):
                 c=dx.apply(lambda x: colors[x]), edgecolor='none', alpha=0.9,
                 cmap=plt.cm.get_cmap('spectral', 10), s=10)
     plt.legend()
-    plt.savefig(file + 'figures/dx_space.png', bbox_inches='tight')
+    plt.savefig(file + 'dx_space.png', bbox_inches='tight')
