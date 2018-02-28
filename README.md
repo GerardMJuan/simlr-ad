@@ -1,6 +1,6 @@
 # SIMLR_AD - Cluster subtpying for Alzheimer's Disease.
 
-![Overview](poster/overview.png)
+![Overview](poster/c1.png)
 
 Repository of the code implementing and applying a non-supervised clustering procedure \[1\]
 for Alzheimer's disease patients subtyping.
@@ -13,7 +13,9 @@ One interesting area to explore is disease subpying. Does the disease behaves di
 1. Identifying possible subgroups of the population where the disease behaves similarly.
 2. Identifying the factors that define those subgroups.
 
-This project aims to solve those two questions. It tries to do this by clustering, using a non-supervised technique. over a space of non-typical AD covariates: data that is not used to diagnose the disease, but that can be obtained quite easily, such as plasma markers.
+![Overview](poster/overview.png)
+
+This project aims to solve those two questions. It tries to do this by clustering, using a non-supervised technique \[1\] over a space of non-typical AD covariates: data that is not used to diagnose the disease, but that can be obtained quite easily, such as plasma markers.
 
 Detecting relevant subtypes of the disease could lead to a more personalized early treatment. Moreover, if the characteristics defining those subtypes are non-invasive markers, we could be closer to a non-invasive disease diagnostic test. This methodology could be applied to other problems and diseases.
 
