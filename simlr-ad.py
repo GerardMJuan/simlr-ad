@@ -104,8 +104,8 @@ def main():
     # tests points into the clustering.
 
     # CLUSTERING
-    t_size = config['data_settings']['test_size']
-    rd = config['general']['random_state']
+    t_size = float(config['data_settings']['test_size'])
+    rd = int(config['general']['random_state'])
     X_train_i, X_test = train_test_split(metadata, test_size=t_size,
                                          random_state=rd)
     # Normalize

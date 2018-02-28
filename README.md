@@ -50,7 +50,7 @@ Files needed for the experiment are as follows. The path indicated is respect to
 
 4. Execute simlr-ad.py. Example execution:
 ```
-python simlr-ad.py --config_file configs/baseline_linux.ini --clusters 3 --output_directory_name test_poster
+python simlr-ad.py --config_file configs/config_dtic2018.ini --clusters 3 --output_directory_name test_poster
 ```
 A new folder will be created in results/, with the name you have chosen, in the root directory of the project.
 

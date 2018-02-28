@@ -52,7 +52,7 @@ def draw_space(space, clustercolor, file, dx):
         sp = np.array(sp)
         plt.scatter(sp[:, 0], sp[:, 1], edgecolor='none', alpha=0.5, label=c)
     plt.legend()
-    plt.savefig(file + 'figures/cluster_space.png', bbox_inches='tight')
+    plt.savefig(file + 'cluster_space.png', bbox_inches='tight')
     plt.close()
     # DX coloring
 
