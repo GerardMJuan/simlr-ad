@@ -24,9 +24,14 @@ All code under the [GNU GPL license](LICENSE).
 ## Requeriments
 Python 2.7+ is required.
 Packages:
+ - pandas
+ - numpy
+ - scipy
+ - sklearn
+ - seaborn
+ - matplotlib
 
-[Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html
-) is also required.
+[Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html) is also required.
 
 ## Folder description:
 - **configs/** contains config files, needed for running the main script.
