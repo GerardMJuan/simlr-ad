@@ -15,6 +15,12 @@ def draw_sim_matrix(S, fig_dir):
     plt.close()
 
 
+def draw_twodim(S, fig_dir):
+    plt.scatter(S[:,0], S[:,1])
+    plt.savefig(fig_dir + "twodim.png")
+    plt.close()
+
+
 def create_weight_maps(data, feat_name, file, name):
     """
     Create, a map of the weights, for the cluster

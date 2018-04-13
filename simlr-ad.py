@@ -23,7 +23,8 @@ from shutil import copy2
 from utils.utils import compute_simlr, feat_ranking
 from sklearn.model_selection import train_test_split
 from utils.stat_utils import compute_randomizedlasso, compute_univariate_test
-from utils.fig_utils import draw_space, draw_sim_matrix
+from utils.fig_utils import draw_space, draw_sim_matrix, draw_twodim
+from sklearn.decomposition import FastICA
 from utils.data_utils import load_data
 
 # Adding input parameters.
@@ -115,6 +116,11 @@ def main():
 
     # Cluster space analysis
     # Use the SIMLR feature ranking
+    fica = FastICA(n_components=2)
+    test = fica.fit_transform(X_train[model_cov])
+    draw_twodim(test, fig_dir)
+    return
+
     y, S, F, ydata, alpha = compute_simlr(
         np.array(X_train[model_cov]), nclusters)
 
