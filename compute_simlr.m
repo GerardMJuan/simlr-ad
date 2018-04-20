@@ -3,7 +3,7 @@ function [y, S, F, ydata, alpha] = compute_simlr(X, nclusters)
 %% done by SIMLR
 addpath('MATLAB/src')
 X = double(X);
-nclusters = double(nclusters);
 rng('default'); %%% for reproducibility
+nclusters = double(nclusters);
 [y, S, F, ydata,alpha] = SIMLR(X,nclusters,10);
 end

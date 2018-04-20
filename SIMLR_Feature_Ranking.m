@@ -22,7 +22,6 @@ pval = pval(aggR);
 
 end
 
-
 function [aggR, pval, rowNames] = aggregateRanks(R, N, complete, topCutoff)
 %AGGREGATERANKS Aggregate ranked lists using traditional and robust methods
 %   [aggR, pval, rowNames] = AGGREGATERANKS(R,N,method,complete,topCutoff)

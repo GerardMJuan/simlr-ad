@@ -23,6 +23,13 @@ def compute_simlr(X, nclusters):
     alpha = np.array(alpha._data).reshape(alpha.size, order='F').squeeze()
     return y, S, F, ydata, alpha
 
+def estimate_number_clusters(X):
+    eng = matlab.engine.start_matlab()
+    (K1, K2) = eng.Estimate_Number_of_Clusters_SIMLR(matlab.double(X.tolist()), matlab.double(list(range(2,11))), nargout=2)
+    K1 = np.array(K1._data).reshape(K1.size, order='F').squeeze()
+    K2 = np.array(K2._data).reshape(K2.size, order='F').squeeze()
+    return K1, K2, list(range(2,11))
+
 
 def feat_ranking(S, X):
     """

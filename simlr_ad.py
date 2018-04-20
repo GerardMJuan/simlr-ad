@@ -7,7 +7,7 @@ This function implements the following pipeline:
 * Calculates the clustering using SIMLR library in MATLAB
 * Run statistical tests for the respective data and clusters.
 
-SIMLR method based on: Wang, B., Zhu, J., Pierson, E., Ramazzotti, D., &
+Using SIMLR implementation of: Wang, B., Zhu, J., Pierson, E., Ramazzotti, D., &
 Batzoglou, S. (2017). Visualization and analysis of single-cell rna-seq data by
 kernel-based similarity learning. Nature Methods, 14(4), 414–416.
 http://doi.org/10.1038/nMeth.4207
@@ -25,19 +25,21 @@ from sklearn.model_selection import train_test_split
 from utils.stat_utils import compute_randomizedlasso, compute_univariate_test
 from utils.fig_utils import draw_space, draw_sim_matrix, draw_twodim
 from sklearn.decomposition import FastICA
-from utils.data_utils import load_data
+from utils.data_utils import load_all_data
 
-# Adding input parameters.
-parser = argparse.ArgumentParser(description='Clustering classification.')
-parser.add_argument("--config_file",
-                    type=str, nargs=1, required=True, help='config file')
-parser.add_argument("--clusters", type=str, nargs=1,
-                    required=True, help='Number of clusters')
-parser.add_argument("--output_directory_name", type=str, nargs=1,
-                    required=True, help='directory where the output will be')
+# Parser
+def get_parser():
+    parser = argparse.ArgumentParser(description='Clustering classification.')
+    parser.add_argument("--config_file",
+                        type=str, nargs=1, required=True, help='config file')
+    parser.add_argument("--clusters", type=str, nargs=1,
+                        required=True, help='Number of clusters')
+    parser.add_argument("--output_directory_name", type=str, nargs=1,
+                        required=True, help='directory where the output will be')
+    return parser
 
 
-def main():
+def main(config_file, clusters, output_directory_name):
     """
     Compute all the tasks of the simlr-ad procedure.
 
@@ -45,18 +47,17 @@ def main():
     selection of clusters.
     """
     t0 = time.time()
-    args = parser.parse_args()
     # Load the configuration of a given experiment.
     config = configparser.ConfigParser()
-    config.read(args.config_file[0])
+    config.read(config_file)
 
     # Load number of clusters
-    nclusters = int(args.clusters[0])
+    nclusters = int(clusters)
 
     # Load the output directory
     # we will also add the date to the output directory
     out_dir = (config["folders"]["EXPERIMENTS"] +
-               args.output_directory_name[0] + os.sep)
+               output_directory_name + os.sep)
     # Create out directory
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
@@ -71,62 +72,30 @@ def main():
         os.makedirs(out_dir + os.path.join('clusters_data', ''))
 
     # Save a copy of the configuration file into the experiments directory
-    copy2(args.config_file[0], out_dir)
+    copy2(config_file, out_dir)
 
-    # Load the metadata
-    metadata = pd.read_csv(config["data"]["metadata_cl"])
-    # Work only with baselines
-    metadata = metadata[metadata.VISCODE == 'bl']
-    # Make gender numeric
-    metadata['PTGENDER'] = metadata['PTGENDER'].astype('category').cat.codes
-
-    # Load the feaures
-    features, feat_names = load_data(metadata, config)
-
-    # Prepare the data, normalize
-    features.iloc[:, 1:] = features.iloc[:, 1:].apply(
-        lambda x: (x - np.mean(x)) / np.std(x), axis=0)
-
+    covariate_data, cov_names, feature_data, feature_names = load_all_data(config["data"]["metadata_cl"], config["data"]["data_ucsd"])
+    
     # First part of the pipeline: create the mixture model
     print("Creating clusters...")
-
-    # List of columns defnining the covariates
-    model_cov = metadata.iloc[:, 5:].columns.values.tolist()
-
-    # Remove not used covariates
-    model_cov.remove('DX_bl')
-    model_cov.remove('APOE4')
-    model_cov.remove('PTGENDER')
-
-    # Sanity check of mising data
-    metadata.dropna(subset=model_cov, inplace=True)
-
-    # Select only a subset of the data to cluster, and then try to add the
-    # tests points into the clustering.
 
     # CLUSTERING
     t_size = float(config['data_settings']['test_size'])
     rd = int(config['general']['random_state'])
-    X_train_i, X_test = train_test_split(metadata, test_size=t_size,
-                                         random_state=rd)
-    # Normalize
-    X_train = X_train_i.copy()
-    X_train[model_cov] = X_train_i[model_cov].apply(
-        lambda x: (x - np.mean(x)) / np.std(x), axis=0)
-
-    # Cluster space analysis
-    # Use the SIMLR feature ranking
-    fica = FastICA(n_components=2)
-    test = fica.fit_transform(X_train[model_cov])
-    draw_twodim(test, fig_dir)
-    return
-
+    
     y, S, F, ydata, alpha = compute_simlr(
-        np.array(X_train[model_cov]), nclusters)
-
-    # Assign the clustering
-    X_train_i['clusters'] = y
-
+        np.array(covariate_data[cov_names]), nclusters)
+    
+    # TODO: Need to save all other outputs
+    
+    df_cluster = pd.DataFrame(data={
+        'PTID': covariate_data['PTID'],
+        'DX': covariate_data['DX_bl'],
+        'C': y
+    })
+    df_cluster.to_csv(out_dir + "cluster_data.csv")
+    
+    """
     # Compute feature ranking using laplacian scores
     aggR, pval = feat_ranking(S, np.array(X_train[model_cov]))
 
@@ -200,11 +169,12 @@ def main():
     table_featordering["name"] = feat_names
     table_featordering = table_featordering.sort_index(by='pval')
     table_featordering.to_csv(out_dir + 'feat_importance_MRI.csv')
-
+    """
     print('Procés finished.')
     t1 = time.time()
     print('Time to compute the script: ', t1 - t0)
 
-
 if __name__ == "__main__":
-    main()
+    parser = get_parser()
+    args = parser.parse_args()
+    main(args.config_file[0], args.clusters[0], args.output_directory_name[0])
