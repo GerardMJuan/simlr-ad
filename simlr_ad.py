@@ -86,6 +86,10 @@ def main(config_file, clusters, output_directory_name):
     y, S, F, ydata, alpha = compute_simlr(
         np.array(covariate_data[cov_names]), nclusters)
     
+    np.save(out_dir + 'S_matrix', S)
+    np.save(out_dir + 'F_matrix', F)
+    np.save(out_dir + 'ydata_matrix', ydata)
+
     # TODO: Need to save all other outputs
     
     df_cluster = pd.DataFrame(data={
@@ -95,9 +99,9 @@ def main(config_file, clusters, output_directory_name):
     })
     df_cluster.to_csv(out_dir + "cluster_data.csv")
     
-    """
+
     # Compute feature ranking using laplacian scores
-    aggR, pval = feat_ranking(S, np.array(X_train[model_cov]))
+    aggR, pval = feat_ranking(S, np.array(covariate_data[cov_names]))
 
     # Draw similarity figure
     draw_sim_matrix(S, fig_dir)
@@ -105,10 +109,10 @@ def main(config_file, clusters, output_directory_name):
     # Save feature ordering on a table
     table_featordering = pd.DataFrame({'aggR': aggR, 'pval': pval})
     table_featordering = table_featordering.sort_index(by='aggR')
-    table_featordering["name"] = model_cov
+    table_featordering["name"] = cov_names
     table_featordering = table_featordering.sort_index(by='pval')
     table_featordering.to_csv(out_dir + 'feat_importance.csv')
-
+    """
     # Draw cluster space
     draw_space(ydata, y, fig_dir, X_train.DX_bl)
 
