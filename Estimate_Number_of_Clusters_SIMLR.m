@@ -18,7 +18,6 @@ title('Relative Quality')
 subplot(1,2,2)
 plot(NUMC,K2,'r-o','LineWidth',4);
 title('Adjusted Quality')
-
 end
 
 function [quality] = Estimate_Number_of_Clusters_given_graph(W, NUMC)

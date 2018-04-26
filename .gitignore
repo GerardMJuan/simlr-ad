@@ -105,11 +105,5 @@ venv.bak/
 .mypy_cache/
 
 # Files that cannot be made public hehehe
-configs/baseline_linux.ini
-data/ADNIMERGE.csv
-data/VITALS.csv
-data/adni_plasma_qc_multiplex_11Nov2010.csv
-data/UCSDVOL.csv
 
 # results folder
-results/
