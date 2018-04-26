@@ -25,7 +25,7 @@ def create_weight_maps(data, feat_name, file, name):
     """
     Create, a map of the weights, for the cluster
 
-    For each age range, compute the variation of the weights.
+    For each cluster, compute the variation of the weights.
     Add labels of the features and of the age ranges
     """
     # From bt_weights, if all the weights in a feature are 0, remove

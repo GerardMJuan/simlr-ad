@@ -23,7 +23,7 @@ from shutil import copy2
 from utils.utils import compute_simlr, feat_ranking
 from sklearn.model_selection import train_test_split
 from utils.stat_utils import compute_randomizedlasso, compute_univariate_test
-from utils.fig_utils import draw_space, draw_sim_matrix, draw_twodim
+from utils.fig_utils import draw_space, draw_sim_matrix, draw_twodim, create_weight_maps
 from sklearn.decomposition import FastICA
 from utils.data_utils import load_all_data
 
@@ -112,6 +112,26 @@ def main(config_file, clusters, output_directory_name):
     table_featordering["name"] = cov_names
     table_featordering = table_featordering.sort_index(by='pval')
     table_featordering.to_csv(out_dir + 'feat_importance.csv')
+    
+    # Compute univariate tests and lasso randomized tests over the
+    # volume features
+    # Statistical tests over the importance of each feature in the original
+    # space over the metadata
+    scores, pval_univ, clusters = compute_univariate_test(features, X_train_i,
+                                                          config["univariate"],
+                                                          out_dir, feat_names)
+
+    scores_lasso, clusters = compute_randomizedlasso(features, X_train_i,
+                                                     config["lasso"], out_dir,
+                                                     feat_names)
+    table_scoresuniv = pd.DataFrame(
+        scores.T, index=feat_names, columns=range(1, nclusters + 1))
+    table_scoreslasso = pd.DataFrame(
+        scores_lasso.T, index=feat_names, columns=range(1, nclusters + 1))
+    
+    create_weight_maps(table_scoresuniv, feat_names, out_dir, "univ")
+    create_weight_maps(table_scoreslasso, feat_names, out_dir, "lasso")
+    
     """
     # Draw cluster space
     draw_space(ydata, y, fig_dir, X_train.DX_bl)
@@ -129,23 +149,8 @@ def main(config_file, clusters, output_directory_name):
         stats_DX.to_csv(
             out_dir + '/clusters_data/clusterdx_' + str(c) + '.csv')
 
-    # Compute univariate tests and lasso randomized tests over the
-    # volume features
-    # Statistical tests over the importance of each feature in the original
-    # space over the metadata
-    scores, pval_univ, clusters = compute_univariate_test(features, X_train_i,
-                                                          config["univariate"],
-                                                          out_dir, feat_names)
-
-    scores_lasso, clusters = compute_randomizedlasso(features, X_train_i,
-                                                     config["lasso"], out_dir,
-                                                     feat_names)
-
     # save results in tables
-    table_scoresuniv = pd.DataFrame(
-        scores.T, index=feat_names, columns=range(1, nclusters + 1))
-    table_scoreslasso = pd.DataFrame(
-        scores_lasso.T, index=feat_names, columns=range(1, nclusters + 1))
+
     table_pvaluniv = pd.DataFrame(
         np.array(pval_univ).T, index=feat_names, columns=range(1, nclusters + 1))
 
