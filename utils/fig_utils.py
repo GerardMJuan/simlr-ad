@@ -36,8 +36,8 @@ def create_weight_maps(data, feat_name, file, name):
     sns.set(rc={'figure.figsize': (10, 18)})
     # Divide the data into the clusters
     plt.figure()
-    xticks = range(np.shape(data)[0])
-    g = sns.heatmap(data=data.T,
+    xticks = range(np.shape(data)[1])
+    g = sns.heatmap(data=data,
                     yticklabels=feat_name, cmap="viridis", linewidths=0.0,
                     xticklabels=xticks, cbar=True)
     plt.title("Weight maps")

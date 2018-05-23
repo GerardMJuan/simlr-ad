@@ -1,4 +1,4 @@
-# Byte-compiled / optimized / DLL files
+﻿# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -105,5 +105,8 @@ venv.bak/
 .mypy_cache/
 
 # Files that cannot be made public hehehe
+data/*.csv
 
-# results folder
+# Other files
+poster/
+old_scripts/

@@ -20,7 +20,7 @@ import os
 import pandas as pd
 import numpy as np
 from shutil import copy2
-from utils.utils import compute_simlr, feat_ranking
+from utils.utils import compute_simlr, compute_cimlr, feat_ranking, estimate_number_clusters_cimlr
 from sklearn.model_selection import train_test_split
 from utils.stat_utils import compute_randomizedlasso, compute_univariate_test
 from utils.fig_utils import draw_space, draw_sim_matrix, draw_twodim, create_weight_maps
@@ -36,10 +36,12 @@ def get_parser():
                         required=True, help='Number of clusters')
     parser.add_argument("--output_directory_name", type=str, nargs=1,
                         required=True, help='directory where the output will be')
+    parser.add_argument("--cimlr", action="store_true", help='Use cimlr')
+
     return parser
 
 
-def main(config_file, clusters, output_directory_name):
+def main(config_file, clusters, output_directory_name, cimlr):
     """
     Compute all the tasks of the simlr-ad procedure.
 
@@ -83,12 +85,24 @@ def main(config_file, clusters, output_directory_name):
     t_size = float(config['data_settings']['test_size'])
     rd = int(config['general']['random_state'])
     
-    y, S, F, ydata, alpha = compute_simlr(
-        np.array(covariate_data[cov_names]), nclusters)
+    if cimlr:
+        # k1, k2, list = estimate_number_clusters_cimlr(np.array(covariate_data[cov_names]))
+        # print('cluster estimation')
+        # print(list)
+        # print(k1)
+        # print(k2)
+        y, S, F, ydata, alpha = compute_cimlr(
+            np.array(covariate_data[cov_names]), nclusters)
+    else:
+        y, S, F, ydata, alpha = compute_simlr(
+            np.array(covariate_data[cov_names]), nclusters)
+
+    covariate_data['clusters'] = y
     
     np.save(out_dir + 'S_matrix', S)
     np.save(out_dir + 'F_matrix', F)
     np.save(out_dir + 'ydata_matrix', ydata)
+    np.save(out_dir + 'alpha', alpha)
 
     # TODO: Need to save all other outputs
     
@@ -117,20 +131,20 @@ def main(config_file, clusters, output_directory_name):
     # volume features
     # Statistical tests over the importance of each feature in the original
     # space over the metadata
-    scores, pval_univ, clusters = compute_univariate_test(features, X_train_i,
+    scores, pval_univ, clusters = compute_univariate_test(feature_data, covariate_data,
                                                           config["univariate"],
-                                                          out_dir, feat_names)
+                                                          out_dir, feature_names)
 
-    scores_lasso, clusters = compute_randomizedlasso(features, X_train_i,
+    scores_lasso, clusters = compute_randomizedlasso(feature_data, covariate_data,
                                                      config["lasso"], out_dir,
-                                                     feat_names)
+                                                     feature_names)
     table_scoresuniv = pd.DataFrame(
-        scores.T, index=feat_names, columns=range(1, nclusters + 1))
+        scores.T, index=feature_names, columns=range(1, nclusters + 1))
     table_scoreslasso = pd.DataFrame(
-        scores_lasso.T, index=feat_names, columns=range(1, nclusters + 1))
+        scores_lasso.T, index=feature_names, columns=range(1, nclusters + 1))
     
-    create_weight_maps(table_scoresuniv, feat_names, out_dir, "univ")
-    create_weight_maps(table_scoreslasso, feat_names, out_dir, "lasso")
+    create_weight_maps(table_scoresuniv, feature_names, out_dir, "univ")
+    create_weight_maps(table_scoreslasso, feature_names, out_dir, "lasso")
     
     """
     # Draw cluster space
@@ -186,4 +200,4 @@ def main(config_file, clusters, output_directory_name):
 if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
-    main(args.config_file[0], args.clusters[0], args.output_directory_name[0])
+    main(args.config_file[0], args.clusters[0], args.output_directory_name[0], args.cimlr)

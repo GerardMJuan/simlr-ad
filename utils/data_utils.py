@@ -95,22 +95,40 @@ def load_data(metadata, config):
     return features, feat_names
 
 
-def load_data_aux(data_path):
-    features_base = pd.read_csv(data_path)
-    features_base = features_base[features_base.VISCODE == 'sc']
-    # select only RID and features
-    features = features_base.iloc[:, 10:-1]
-    features = features.div(features_base.EICV, axis=0)
-    feat_names = features.columns.values
-    features.insert(loc=0, column='RID', value=features_base['RID'])
-    
-    features[feat_names] = features[feat_names].apply(
-       lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)
+def load_data_aux(data_path, data_type, normalize=True):
+    if data_type == 'FS':
+        features_base = pd.read_csv(data_path)
+        # select the features
+        features = features_base.iloc[:, 1:-1]
+        feat_names = features.columns.values
+        # Normalize by ICV
+        features = features.div(features_base.EstimatedTotalIntraCranialVol, axis=0)
+        # Create RID
+        # RID = [x for x in map(lambda s: s[4:7] + '_S_' + s[8:], features_base.SUBJ.values)]
+        RID = [int(x) for x in map(lambda s: s[8:], features_base.SUBJ.values)]
+        
+        features.insert(loc=0, column='RID', value=RID)
+        # Normalize
+        if normalize:
+            features[feat_names] = features[feat_names].apply(
+                lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)       
+    else:
+        
+        features_base = pd.read_csv(data_path)
+        features_base = features_base[features_base.VISCODE == 'sc']
+        # select only RID and features
+        features = features_base.iloc[:, 10:-1]
+        features = features.div(features_base.EICV, axis=0)
+        feat_names = features.columns.values
+        features.insert(loc=0, column='RID', value=features_base['RID'])
+        if normalize:
+            features[feat_names] = features[feat_names].apply(
+               lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)
 
     return features, feat_names
 
 
-def load_covariates(metadata_path):
+def load_covariates(metadata_path, normalize=True):
     """
     Loads the covariate data.
     
@@ -130,9 +148,9 @@ def load_covariates(metadata_path):
     cov_names.remove('PTGENDER')
     cov_names.remove('AGE')
     cov_names.remove('PTEDUCAT')
-    # cov_names.remove('VSBPSYS')
-    # cov_names.remove('VSBPDIA')
-    # cov_names.remove('BMI')
+    cov_names.remove('VSBPSYS')
+    cov_names.remove('VSBPDIA')
+    cov_names.remove('BMI')
     """
     variables_to_remove = ['AGE', 'APOE4', 'PTGENDER', 'DX', 'PTEDUCAT']
     
@@ -160,8 +178,9 @@ def load_covariates(metadata_path):
 
     # Try different types of regularization
     # Transform to [0..1] range
-    covariate_data[cov_names] = covariate_data[cov_names].apply(
-       lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)
+    if normalize:
+        covariate_data[cov_names] = covariate_data[cov_names].apply(
+           lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)
 
     # Try different types of regularization
     # Transform to [0..1] range
@@ -176,7 +195,7 @@ def load_covariates(metadata_path):
 
 
 
-def load_all_data(metadata_path, data_path):
+def load_all_data(metadata_path, data_path, data_type='FS', normalize=True):
     """
     Auxiliary function to call both data loading functions.
     
@@ -184,8 +203,8 @@ def load_all_data(metadata_path, data_path):
     intersected available data. Will be useless later but for now it is cool
     to use and all that hehe.
     """
-    covariate_data, cov_names = load_covariates(metadata_path)
-    feature_data, feature_names = load_data_aux(data_path)
+    covariate_data, cov_names = load_covariates(metadata_path, normalize)
+    feature_data, feature_names = load_data_aux(data_path, data_type, normalize)
 
     covariate_data.sort_index(by='RID', inplace=True)
     feature_data.sort_index(by='RID', inplace=True)
