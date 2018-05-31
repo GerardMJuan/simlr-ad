@@ -148,9 +148,9 @@ def load_covariates(metadata_path, normalize=True):
     cov_names.remove('PTGENDER')
     cov_names.remove('AGE')
     cov_names.remove('PTEDUCAT')
-    cov_names.remove('VSBPSYS')
-    cov_names.remove('VSBPDIA')
-    cov_names.remove('BMI')
+    #cov_names.remove('VSBPSYS')
+    #cov_names.remove('VSBPDIA')
+    #cov_names.remove('BMI')
     """
     variables_to_remove = ['AGE', 'APOE4', 'PTGENDER', 'DX', 'PTEDUCAT']
     

@@ -106,7 +106,9 @@ venv.bak/
 
 # Files that cannot be made public hehehe
 data/*.csv
+!data/aseg_volume.csv
 
 # Other files
 poster/
 old_scripts/
+svg_figures/

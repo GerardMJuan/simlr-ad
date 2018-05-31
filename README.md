@@ -39,7 +39,6 @@ Packages:
 - **MATLAB/** contains the implementation of SIMLR \[1\]. Under the GNU GPL License.
 - **utils/** contains extra code necessary for the correct functionality of the main script.
 - **jupyter_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper.
-- **svg_figures/** contains svg files of the paper figures.
 
 ## Data
 Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed, researchers have to ask for access to the data directly to ADNI. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented
@@ -47,7 +46,7 @@ at ETIC PhD Workshop 2018, for reproducibility.
 
 Files needed for the experiment are as follows, all available in the ADNI website:
 - **ADNIMERGE.csv**
-- **adni_plasma_qc_multiplex_11Nov2010.csv** 
+- **adni_plasma_qc_multiplex_11Nov2010.csv**
 - **ADMCDUKEP180UPLC_01_15_16.csv**
 - **ADMCDUKEP180UPLC_DICT.csv**
 - **ADNI_BLENNOWPLASMANFL.csv**
@@ -60,7 +59,7 @@ Files needed for the experiment are as follows, all available in the ADNI websit
 2. Run ```data/Data_preparation.ipynb``` to generate a file with the covariate data needed for the clustering. Script can be modified to include
    diferent covariates/patients.
 
-3. Define a config file with the experiment parameters. 
+3. Define a config file with the experiment parameters.
 
 4. Execute simlr-ad.py. Example execution:
 ```
@@ -71,4 +70,3 @@ A new folder will be created in the folder defined in the configuration, with th
 ### References
 \[1\]: Wang, B., Zhu, J., Pierson, E., Ramazzotti, D., & Batzoglou, S. (2017). Visualization and analysis of single-cell rna-seq data by kernel-based similarity learning. Nature Methods, 14(4), 414–416. http://doi.org/10.1038/nMeth.4207
 \[2\]: 1. Ramazzotti D, Lal A, Wang B, Batzoglou S, Sidow A. Multi-omic tumor data reveal diversity of molecular mechanisms underlying survival. bioRxiv. 2018:267245. doi:10.1101/267245
-
