@@ -112,5 +112,6 @@ data/*.csv
 poster/
 old_scripts/
 svg_figures/
-Simlr-AD-freesurfer/glm_output/
-Simlr-AD-freesurfer/processed_files/
+cortical_experiments/glm_output/
+cortical_experiments/processed_files/
+cortical_experiments/freefiles/
