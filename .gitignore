@@ -112,3 +112,5 @@ data/*.csv
 poster/
 old_scripts/
 svg_figures/
+Simlr-AD-freesurfer/glm_output/
+Simlr-AD-freesurfer/processed_files/
