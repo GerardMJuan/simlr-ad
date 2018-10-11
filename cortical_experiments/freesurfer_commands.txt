@@ -1,9 +1,9 @@
 ## Start with the following
-
 srun --nodes=1 --partition=high --mem=4GB --pty bash -i
 source /etc/profile.d/lmod.sh
 source /etc/profile.d/easybuild.sh
 module load libGLU
+module load MATLAB
 export PATH="$HOME/project/anaconda3/bin:$PATH"
 source activate dlnn
 export FREESURFER_HOME=/homedtic/gmarti/LIB/freesurfer
@@ -11,12 +11,12 @@ export FREESURFER_HOME=/homedtic/gmarti/LIB/freesurfer
 export SUBJECTS_DIR=/homedtic/gmarti/DATA/Data/SIMLR-AD-FS_Full/
 
 # For jupyter_experiments
-export XDG_RUNTIME_DIR=""
-jupyter notebook --ip $(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1) --no-browser
+  export XDG_RUNTIME_DIR=""
+jupyter-lab --ip $(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1) --no-browser
 
 and to my pc
-ssh -NL 8888:10.80.61.30:8888 gmarti@hpc.s.upf.edu
-
+ssh -NL 8888:10.80.61.14:8888 gmarti@hpc.s.upf.edu
+10.80.61.14
 
 ## Execute mri_prepoc
 
@@ -100,4 +100,4 @@ mri_glmfit-sim \
 
 visualize
 
-freeview -f $SUBJECTS_DIR/fsaverage/surf/lh.inflated:overlay=glm_output/lh.C4CN.glmdir/C4CN/cache.th40.neg.sig.cluster.mgh:overlay_threshold=2,5:annot=glm_output/lh.C4CN.glmdir/C4CN/cache.th40.neg.sig.ocn.annot -viewport 3d
+freeview -f $SUBJECTS_DIR/fsaverage/surf/lh.inflated:overlay=glm_output/lh.C4CN.glmdir/C4CN/cache.th40.neg.sig.cluster.mgh:overlay_threshold=1:annot=glm_output/lh.C4CN.glmdir/C4CN/cache.th40.neg.sig.ocn.annot -viewport 3d

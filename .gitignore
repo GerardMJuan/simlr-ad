@@ -115,3 +115,5 @@ svg_figures/
 cortical_experiments/glm_output/
 cortical_experiments/processed_files/
 cortical_experiments/freefiles/
+cortical_experiments/LOGS/
+cortical_experiments/hpc_scripts/
