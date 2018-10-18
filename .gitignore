@@ -117,3 +117,11 @@ cortical_experiments/processed_files/
 cortical_experiments/freefiles/
 cortical_experiments/LOGS/
 cortical_experiments/hpc_scripts/
+cortical_experiments/subjects_experiments.csv
+cortical_experiments/cluster_data.csv
+cortical_experiments/script_new_metadata.csv
+
+# Ignore test things about LEASpy
+data/data_leaspy.txt
+data/prepare_long.ipynb
+data/prepare_long.py

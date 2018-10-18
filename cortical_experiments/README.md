@@ -10,7 +10,5 @@ contain a corresponding experiment. Each files can generate the results for both
 Those files are actually really similar and share a bit of code, but for the sake of reproducibility they are in completely separate
 files. This way, each of the experiments can be replicated separately.
 
-
 # Requeriments
-Freesurfer is required to perform the experiments.
-TODO: extend on the installation.
+Freesurfer 6.0 and fsPALM are required to perform the experiments, with the subjects directory of freesurfer pointing to a folder containing the processed files of the subjects.
