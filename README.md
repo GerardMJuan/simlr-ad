@@ -33,12 +33,15 @@ Packages:
 
 [Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html) is also required, as well as having MATLAB installed.
 
+[Freesurfer](https://surfer.nmr.mgh.harvard.edu/) is also required, and its [fsPalm extension](https://surfer.nmr.mgh.harvard.edu/fswiki/FsPalm).
+
 ## Folder description:
 - **configs/** contains config files, needed for running the main script.
 - **data/** contains the necessary data to run the script.
 - **MATLAB/** contains the implementation of SIMLR \[1\]. Under the GNU GPL License.
 - **utils/** contains extra code necessary for the correct functionality of the main script.
 - **jupyter_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper.
+- **corotical_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper on cortical analysis.
 
 ## Data
 Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed, researchers have to ask for access to the data directly to ADNI. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented
@@ -66,6 +69,8 @@ Files needed for the experiment are as follows, all available in the ADNI websit
 python simlr-ad.py --config_file configs/config_dtic2018.ini --clusters 4 --output_directory_name test --cimlr
 ```
 A new folder will be created in the folder defined in the configuration, with the name you have chosen, containing the results.
+
+5. The statistical experiments can be done using the notebooks found in the folders **jupyter_experiments** and **cortical_experiments**.
 
 ### References
 \[1\]: Wang, B., Zhu, J., Pierson, E., Ramazzotti, D., & Batzoglou, S. (2017). Visualization and analysis of single-cell rna-seq data by kernel-based similarity learning. Nature Methods, 14(4), 414–416. http://doi.org/10.1038/nMeth.4207
