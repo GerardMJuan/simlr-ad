@@ -77,14 +77,14 @@ def main(config_file, clusters, output_directory_name, cimlr):
     copy2(config_file, out_dir)
 
     covariate_data, cov_names, feature_data, feature_names = load_all_data(config["data"]["metadata_cl"], config["data"]["data_ucsd"])
-    
+
     # First part of the pipeline: create the mixture model
     print("Creating clusters...")
 
     # CLUSTERING
     t_size = float(config['data_settings']['test_size'])
     rd = int(config['general']['random_state'])
-    
+
     if cimlr:
         # k1, k2, list = estimate_number_clusters_cimlr(np.array(covariate_data[cov_names]))
         # print('cluster estimation')
@@ -98,21 +98,21 @@ def main(config_file, clusters, output_directory_name, cimlr):
             np.array(covariate_data[cov_names]), nclusters)
 
     covariate_data['clusters'] = y
-    
+
     np.save(out_dir + 'S_matrix', S)
     np.save(out_dir + 'F_matrix', F)
     np.save(out_dir + 'ydata_matrix', ydata)
     np.save(out_dir + 'alpha', alpha)
 
     # TODO: Need to save all other outputs
-    
+
     df_cluster = pd.DataFrame(data={
         'PTID': covariate_data['PTID'],
         'DX': covariate_data['DX_bl'],
         'C': y
     })
     df_cluster.to_csv(out_dir + "cluster_data.csv")
-    
+
 
     # Compute feature ranking using laplacian scores
     aggR, pval = feat_ranking(S, np.array(covariate_data[cov_names]))
@@ -126,7 +126,7 @@ def main(config_file, clusters, output_directory_name, cimlr):
     table_featordering["name"] = cov_names
     table_featordering = table_featordering.sort_index(by='pval')
     table_featordering.to_csv(out_dir + 'feat_importance.csv')
-    
+
     # Compute univariate tests and lasso randomized tests over the
     # volume features
     # Statistical tests over the importance of each feature in the original
@@ -142,10 +142,10 @@ def main(config_file, clusters, output_directory_name, cimlr):
         scores.T, index=feature_names, columns=range(1, nclusters + 1))
     table_scoreslasso = pd.DataFrame(
         scores_lasso.T, index=feature_names, columns=range(1, nclusters + 1))
-    
+
     create_weight_maps(table_scoresuniv, feature_names, out_dir, "univ")
     create_weight_maps(table_scoreslasso, feature_names, out_dir, "lasso")
-    
+
     """
     # Draw cluster space
     draw_space(ydata, y, fig_dir, X_train.DX_bl)
