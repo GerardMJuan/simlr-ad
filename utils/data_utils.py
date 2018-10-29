@@ -209,7 +209,7 @@ def load_all_data(metadata_path, data_path, data_type='FS', normalize=True):
     covariate_data.sort_index(by='RID', inplace=True)
     feature_data.sort_index(by='RID', inplace=True)
 
-    # select only samples where both 
+    # select only samples where both intsersect
     selected_rid = np.intersect1d(feature_data.RID.values, covariate_data.RID.values)
     covariate_data_new = covariate_data.loc[covariate_data.RID.isin(selected_rid)] 
     feature_data_new = feature_data.loc[feature_data.RID.isin(selected_rid)]

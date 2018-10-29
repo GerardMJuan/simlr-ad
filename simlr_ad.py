@@ -25,7 +25,7 @@ from sklearn.model_selection import train_test_split
 from utils.stat_utils import compute_randomizedlasso, compute_univariate_test
 from utils.fig_utils import draw_space, draw_sim_matrix, draw_twodim, create_weight_maps
 from sklearn.decomposition import FastICA
-from utils.data_utils import load_all_data
+from utils.data_utils import load_all_data, load_covariates
 
 # Parser
 def get_parser():
@@ -76,8 +76,10 @@ def main(config_file, clusters, output_directory_name, cimlr):
     # Save a copy of the configuration file into the experiments directory
     copy2(config_file, out_dir)
 
-    covariate_data, cov_names, feature_data, feature_names = load_all_data(config["data"]["metadata_cl"], config["data"]["data_ucsd"])
-
+    # covariate_data, cov_names, feature_data, feature_names = load_all_data(config["data"]["metadata_cl"], config["data"]["data_ucsd"])
+    covariate_data, cov_names = load_covariates(config["data"]["metadata_cl"])
+    covariate_data.sort_index(by='RID', inplace=True)
+   
     # First part of the pipeline: create the mixture model
     print("Creating clusters...")
 
@@ -131,6 +133,7 @@ def main(config_file, clusters, output_directory_name, cimlr):
     # volume features
     # Statistical tests over the importance of each feature in the original
     # space over the metadata
+    """
     scores, pval_univ, clusters = compute_univariate_test(feature_data, covariate_data,
                                                           config["univariate"],
                                                           out_dir, feature_names)
@@ -145,7 +148,7 @@ def main(config_file, clusters, output_directory_name, cimlr):
 
     create_weight_maps(table_scoresuniv, feature_names, out_dir, "univ")
     create_weight_maps(table_scoreslasso, feature_names, out_dir, "lasso")
-
+    """
     """
     # Draw cluster space
     draw_space(ydata, y, fig_dir, X_train.DX_bl)
