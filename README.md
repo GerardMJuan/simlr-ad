@@ -1,7 +1,5 @@
 # CIMLR_AD - Cluster subtpying for Alzheimer's Disease.
 
-![Overview](images/c1.png)
-
 Repository of the code implementing and applying a non-supervised clustering procedure \[1\]
 for Alzheimer's disease patients profiling.
 
