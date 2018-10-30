@@ -13,7 +13,7 @@ One interesting area to explore is disease subpying. Does the disease behave dif
 1. Identifying possible subgroups of the population where the disease interacts differently with the patient, provoking different symptoms.
 2. Identifying the factors that define those subgroups.
 
-![Overview](images/figure_1.png)
+![Overview](images/fig1.png)
 
 This project tackles those two questions. We apply a non-supervised clustering technique \[1\] \[2\] over a space of blood markers, which are not typically used to detect the disease but are inexpensive and easy to obtain.
 
@@ -33,7 +33,7 @@ Packages:
 
 [Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html) is also required, as well as having MATLAB installed.
 
-[Freesurfer](https://surfer.nmr.mgh.harvard.edu/) is also required, and its [fsPalm extension](https://surfer.nmr.mgh.harvard.edu/fswiki/FsPalm).
+[Freesurfer](https://surfer.nmr.mgh.harvard.edu/) is also required for the cortical experiments, and its [fsPalm extension](https://surfer.nmr.mgh.harvard.edu/fswiki/FsPalm).
 
 ## Folder description:
 - **configs/** contains config files, needed for running the main script.
@@ -41,7 +41,7 @@ Packages:
 - **MATLAB/** contains the implementation of SIMLR \[1\]. Under the GNU GPL License.
 - **utils/** contains extra code necessary for the correct functionality of the main script.
 - **jupyter_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper.
-- **corotical_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper on cortical analysis.
+- **cortical_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper on cortical analysis.
 
 ## Data
 Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed, researchers have to ask for access to the data directly to ADNI. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented

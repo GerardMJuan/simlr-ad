@@ -106,7 +106,10 @@ venv.bak/
 
 # Files that cannot be made public hehehe
 data/*.csv
-!data/aseg_volume.csv
+data/aseg_volume.csv
+data/Data_preparation.ipynb
+data/Data_preparation_long.ipynb
+data/Data_exploration_blood.ipynb
 
 # Other files
 poster/
@@ -125,3 +128,13 @@ cortical_experiments/script_new_metadata.csv
 data/data_leaspy.txt
 data/prepare_long.ipynb
 data/prepare_long.py
+
+# Future files not needed right now
+long_experiments/
+results/
+
+# Images que no venen a cuento
+jupyter-experiments/*.eps
+jupyter-experiments/*.png
+jupyter-experiments/percentiles.csv
+jupyter-experiments/values_with_markers.csv

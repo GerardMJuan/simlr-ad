@@ -1,7 +1,7 @@
 theme: jekyll-theme-minimal
 title: SIMLR-AD
 description: |
-    Implementation and experiments for "Data-driven clustering for AD disease subtyping characterization", poster presented in the <a href="https://www.upf.edu/web/etic_doctoral_workshop">DTIC PhD Workshop 2018</a>.
+    Implementation and experiments for "Revealing heterogeneity of brain imaging phenotypes in Alzheimer's disease based on unsupervised clustering of blood protein profiles". Preprint at: <a href="https://www.biorxiv.org/content/early/2018/06/05/339614"> bioRxiv</a>.
     <br>
     <br>
     For any issues with the code, contact me at gerard.marti(at)upf.edu.
