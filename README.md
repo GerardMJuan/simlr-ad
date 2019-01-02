@@ -1,7 +1,6 @@
 # CIMLR_AD - Cluster subtpying for Alzheimer's Disease.
 
-Repository of the code implementing and applying a non-supervised clustering procedure \[1\]
-for Alzheimer's disease patients profiling.
+Repository of the code implementing the paper "Martí-Juan G, Sanroma G, Piella G et al. Revealing heterogeneity of brain imaging phenotypes in Alzheimer’s disease based on unsupervised clustering of blood marker profiles. PLoS ONE [In revision]. 2018 Jun 5. Available from: https://doi.org/10.1101/339614"
 
 ## Introduction and motivation
 
@@ -15,12 +14,13 @@ One interesting area to explore is disease subpying. Does the disease behave dif
 
 This project tackles those two questions. We apply a non-supervised clustering technique \[1\] \[2\] over a space of blood markers, which are not typically used to detect the disease but are inexpensive and easy to obtain.
 
-Detecting relevant subtypes of the disease could lead to a more personalized early treatment. Moreover, if the characteristics defining those subtypes are non-invasive markers, we could be closer to non-invasive testing. This methodology could be applied to other problems and diseases.
+Detecting relevant subtypes of the disease could lead to a more personalized early treatment. Moreover, if the characteristics defining those subtypes are non-invasive markers, we could be closer to non-invasive testing and could gain more understanding of the hidden processes in the disease.
 
-All code under the [GNU GPL license](LICENSE). SIMLR/CIMLR code forked from (https://github.com/BatzoglouLabSU/SIMLR)
+All code under the [GNU GPL license](LICENSE). SIMLR/CIMLR code forked from (https://github.com/BatzoglouLabSU/SIMLR), their license applies.
 
 ## Requeriments
-Python 2.7+ is required.
+Python 2.7+ is required. Jupyter is required to run the notebooks.
+
 Packages:
  - pandas
  - numpy
@@ -29,21 +29,21 @@ Packages:
  - seaborn
  - matplotlib
 
-[Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html) is also required, as well as having MATLAB installed.
+
+[Matlab engine for Python](https://es.mathworks.com/help/matlab/matlab-engine-for-python.html) is also required, as well as having MATLAB installed, for the clustering simulation.
 
 [Freesurfer](https://surfer.nmr.mgh.harvard.edu/) is also required for the cortical experiments, and its [fsPalm extension](https://surfer.nmr.mgh.harvard.edu/fswiki/FsPalm).
 
 ## Folder description:
 - **configs/** contains config files, needed for running the main script.
-- **data/** contains the necessary data to run the script.
+- **data/** contains instructions to generate the necessary data to run the scripts (see below).
 - **MATLAB/** contains the implementation of SIMLR \[1\]. Under the GNU GPL License.
 - **utils/** contains extra code necessary for the correct functionality of the main script.
-- **jupyter_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper.
-- **cortical_experiments/** contains Jupyter notebooks useful to reproduce the experiments of the paper on cortical analysis.
+- **jupyter_experiments/** contains Jupyter notebooks to reproduce the experiments of the paper.
+- **cortical_experiments/** contains Jupyter notebooks to reproduce the experiments of the paper on cortical analysis.
 
 ## Data
-Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed, researchers have to ask for access to the data directly to ADNI. File named ```patients-dtic2018.csv``` contains a list of patients used in the results presented
-at ETIC PhD Workshop 2018, for reproducibility.
+Data used is gathered from [ADNI](http://adni.loni.usc.edu/) database. Data is available [upon request](http://adni.loni.usc.edu/data-samples/access-data/). Due to the use agreement of ADNI, data cannot be redistributed, researchers have to ask for access to the data directly to ADNI. File named ```subjects.csv``` contains a list of patients used in the paper for reproducibility.
 
 Files needed for the experiment are as follows, all available in the ADNI website:
 - **ADNIMERGE.csv**
@@ -57,14 +57,13 @@ Files needed for the experiment are as follows, all available in the ADNI websit
 ## Instructions:
 1. Place the corresponding files in the data/ directory.
 
-2. Run ```data/Data_preparation.ipynb``` to generate a file with the covariate data needed for the clustering. Script can be modified to include
-   diferent covariates/patients.
+2. Run ```data/Data_preparation.ipynb``` to generate a file with the covariate data needed for the clustering. Script can be modified to include diferent covariates/patients.
 
 3. Define a config file with the experiment parameters.
 
 4. Execute simlr-ad.py. Example execution:
 ```
-python simlr-ad.py --config_file configs/config_dtic2018.ini --clusters 4 --output_directory_name test --cimlr
+python simlr-ad.py --config_file configs/config_cimlr.ini --clusters 4 --output_directory_name test --cimlr
 ```
 A new folder will be created in the folder defined in the configuration, with the name you have chosen, containing the results.
 

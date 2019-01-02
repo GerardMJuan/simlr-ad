@@ -8,3 +8,5 @@ The Jupyter notebook contained here can be used to both reproduce the results in
 
 Those files need either to have already generated a clustering using the standalone simlr-ad.py script, or generating one on the go. In this case,
 an appropiate configuration file and parameters needs to be set.
+
+In order for some of the scripts to work, you need the fsaverage template from FreeSurfer. Either put it in the folder or replace the path used in the scripts with the actual path to the template.
