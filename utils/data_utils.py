@@ -106,14 +106,14 @@ def load_data_aux(data_path, data_type, normalize=True):
         # Create RID
         # RID = [x for x in map(lambda s: s[4:7] + '_S_' + s[8:], features_base.SUBJ.values)]
         RID = [int(x) for x in map(lambda s: s[8:], features_base.SUBJ.values)]
-        
+
         features.insert(loc=0, column='RID', value=RID)
         # Normalize
         if normalize:
             features[feat_names] = features[feat_names].apply(
-                lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)       
+                lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)
     else:
-        
+
         features_base = pd.read_csv(data_path)
         features_base = features_base[features_base.VISCODE == 'sc']
         # select only RID and features
@@ -131,7 +131,7 @@ def load_data_aux(data_path, data_type, normalize=True):
 def load_covariates(metadata_path, normalize=True):
     """
     Loads the covariate data.
-    
+
     Loads the covariate data, and returns the dataframe and the names of the features.
     """
     # Load the metadata
@@ -140,7 +140,7 @@ def load_covariates(metadata_path, normalize=True):
     covariate_data = covariate_data[covariate_data.VISCODE == 'bl']
     # Make gender numeric
     covariate_data['PTGENDER'] = covariate_data['PTGENDER'].astype('category').cat.codes
-    
+
     # List of columns defnining the covariates
     cov_names = covariate_data.iloc[:, 5:].columns.values.tolist()
     cov_names.remove('DX_bl')
@@ -148,12 +148,9 @@ def load_covariates(metadata_path, normalize=True):
     cov_names.remove('PTGENDER')
     cov_names.remove('AGE')
     cov_names.remove('PTEDUCAT')
-    #cov_names.remove('VSBPSYS')
-    #cov_names.remove('VSBPDIA')
-    #cov_names.remove('BMI')
     """
     variables_to_remove = ['AGE', 'APOE4', 'PTGENDER', 'DX', 'PTEDUCAT']
-    
+
     # Encode DX
     le = LabelEncoder()
     y = le.fit_transform(covariate_data['DX_bl'])
@@ -167,7 +164,7 @@ def load_covariates(metadata_path, normalize=True):
     # covariate_data[cov_names] = lr.intercept_
     for c in lr.coef_:
         print(c.shape)
-        covariate_data[cov_names] = covariate_data[cov_names] - covariate_data[cov_names]*c 
+        covariate_data[cov_names] = covariate_data[cov_names] - covariate_data[cov_names]*c
     """
     # Sanity check of mising data
     covariate_data.dropna(subset=cov_names, inplace=True)
@@ -186,7 +183,7 @@ def load_covariates(metadata_path, normalize=True):
     # Transform to [0..1] range
     # metadata[model_cov] = metadata[model_cov].apply(
     #   lambda x: (x - np.min(x)) / (np.max(x)-np.min(x)), axis=0)
-    
+
     # Apply a log transformation
     # metadata[model_cov] = metadata[model_cov].apply(
     #    lambda x: np.log10(x + 1), axis=0)
@@ -198,8 +195,8 @@ def load_covariates(metadata_path, normalize=True):
 def load_all_data(metadata_path, data_path, data_type='FS', normalize=True):
     """
     Auxiliary function to call both data loading functions.
-    
-    This function loads both types of data and returns the already ordered, 
+
+    This function loads both types of data and returns the already ordered,
     intersected available data. Will be useless later but for now it is cool
     to use and all that hehe.
     """
@@ -211,7 +208,7 @@ def load_all_data(metadata_path, data_path, data_type='FS', normalize=True):
 
     # select only samples where both intsersect
     selected_rid = np.intersect1d(feature_data.RID.values, covariate_data.RID.values)
-    covariate_data_new = covariate_data.loc[covariate_data.RID.isin(selected_rid)] 
+    covariate_data_new = covariate_data.loc[covariate_data.RID.isin(selected_rid)]
     feature_data_new = feature_data.loc[feature_data.RID.isin(selected_rid)]
-    
+
     return covariate_data_new, cov_names, feature_data_new, feature_names

@@ -79,7 +79,7 @@ def main(config_file, clusters, output_directory_name, cimlr):
     # covariate_data, cov_names, feature_data, feature_names = load_all_data(config["data"]["metadata_cl"], config["data"]["data_ucsd"])
     covariate_data, cov_names = load_covariates(config["data"]["metadata_cl"])
     covariate_data.sort_index(by='RID', inplace=True)
-   
+
     # First part of the pipeline: create the mixture model
     print("Creating clusters...")
 
@@ -88,11 +88,6 @@ def main(config_file, clusters, output_directory_name, cimlr):
     rd = int(config['general']['random_state'])
 
     if cimlr:
-        # k1, k2, list = estimate_number_clusters_cimlr(np.array(covariate_data[cov_names]))
-        # print('cluster estimation')
-        # print(list)
-        # print(k1)
-        # print(k2)
         y, S, F, ydata, alpha = compute_cimlr(
             np.array(covariate_data[cov_names]), nclusters)
     else:
