@@ -50,10 +50,10 @@ def estimate_number_clusters(X):
 
 def estimate_number_clusters_cimlr(X):
     eng = matlab.engine.start_matlab()
-    (K1, K2) = eng.number_kernels_cimlr(matlab.double(X.tolist()), matlab.double(list(range(2,15))), nargout=2)
+    (K1, K2) = eng.number_kernels_cimlr(matlab.double(X.tolist()), matlab.double(list(range(2,9))), nargout=2)
     K1 = np.array(K1._data).reshape(K1.size, order='F').squeeze()
     K2 = np.array(K2._data).reshape(K2.size, order='F').squeeze()
-    return K1, K2, list(range(2,15))
+    return K1, K2, list(range(2,9))
 
 def feat_ranking(S, X):
     """
