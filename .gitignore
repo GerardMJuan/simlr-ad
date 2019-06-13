@@ -126,6 +126,8 @@ data/data_leaspy.txt
 data/prepare_long.ipynb
 data/prepare_long.py
 
+long_data/
+
 # Future files not needed right now
 long_experiments/
 results/
@@ -139,3 +141,9 @@ jupyter-experiments/fsaverage/
 jupyter-experiments/mask.mgz
 
 cortical_experiments/script_new_metadata.py
+
+# coses que tenen info confidencial
+longitudinal_experiments/cortical_longitudinal_experiments/freefiles/
+
+# remote sync tampoc s'ha de pujar, te la meva puta password
+.remote-sync.json
