@@ -11,6 +11,8 @@ Using SIMLR implementation of: Wang, B., Zhu, J., Pierson, E., Ramazzotti, D., &
 Batzoglou, S. (2017). Visualization and analysis of single-cell rna-seq data by
 kernel-based similarity learning. Nature Methods, 14(4), 414–416.
 http://doi.org/10.1038/nMeth.4207
+
+TODO: PORT TO CIMLR PYTHON
 """
 
 import configparser
