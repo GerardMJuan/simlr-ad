@@ -28,7 +28,7 @@ if isMax == 0
 else
     [d1, idx] = sort(d,'descend');
 end;
-
+    
 idx1 = idx(1:c);
 eigval = d(idx1);
 %eigvec = real(v(:,idx1)*diag(sqrt(1-eigval)));

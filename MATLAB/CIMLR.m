@@ -148,7 +148,7 @@ while (abs(Hdiff) > tol) && (tries < 30)
     % If not, increase or decrease precision
     if Hdiff > 0
         betamin = beta;
-        if isinf(betamax)
+        if isinf(betamax)this
             beta = beta * 2;
         else
             beta = (beta + betamax) / 2;

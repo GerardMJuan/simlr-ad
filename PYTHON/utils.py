@@ -1,3 +1,0 @@
-"""
-Utils functions as support
-"""
