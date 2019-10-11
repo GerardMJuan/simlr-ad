@@ -9,7 +9,7 @@ in  MATLAB and see that it works exactly the same
 from cimlr_python.cimlr import CIMLR
 import scipy.io
 from sklearn.preprocessing import minmax_scale
-
+import numpy as np
 
 def main():
     """Load the data nd run the algorithm
@@ -41,8 +41,9 @@ def main():
     # Now, normalize
     i = 0
     for [l] in alldata:
-        l = minmax_scale(l)
-        #l = l - np.min(l) / (np.max(l) - np.min(l))
+        # l = minmax_scale(l)
+        l = (l - np.min(l, axis=0)) / (np.max(l, axis=0) - np.min(l, axis=0))
+        l[np.isnan(l)] = 0.5
         alldata[i] = [l]
         i += 1
 

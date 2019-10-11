@@ -23,7 +23,7 @@ alldata{3} = tumor_data.methylation;
 expression = tumor_data.expression;
 expression(expression>10) = 10;
 expression(expression<-10) = -10;
-alldata{4} = tumor_data.expression;
+alldata{4} = expression;
 for i = 1:size(alldata{1},2)
     alldata{1}(:,i) = (alldata{1}(:,i) - min(alldata{1}(:,i))) / (max(alldata{1}(:,i)) - min(alldata{1}(:,i)));
     alldata{1}(isnan(alldata{1}(:,i)),i) = 0.5;
@@ -43,7 +43,7 @@ rng(32655,'twister'); %%% for reproducibility
 % perform CIMLR with the estimated best number of clusters
 C = 3; %%% best number of clusters
 rng(43556,'twister'); %%% for reproducibility
-[y, S, F, ydata] = CIMLR(alldata,C,10);
+ [y, S, F, ydata] = CIMLR(alldata,C,10);
 
 % perform CIMLR Feature Ranking
 rng(12844,'twister'); %%% for reproducibility

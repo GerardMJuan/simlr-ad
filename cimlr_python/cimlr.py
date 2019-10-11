@@ -32,8 +32,8 @@ class CIMLR(object):
         self.eps = sys.float_info.epsilon
 
         # parameters of the kernel creation
-        self.sigma = list(range(50, 30, -5))
-        self.k_list = list(range(40, 50, 5))
+        self.sigma = list(range(50, 25, -5))
+        self.k_list = list(range(40, 55, 5))
 
         # Initialize fiting values
         self.fitted = False
@@ -52,40 +52,46 @@ class CIMLR(object):
         with n being the number of samples and m the number of features.
         normalize: normalize the input data
         """
+        # Number of subjects we have
+        n_subj = X[0][0].shape[0]
+
+        # For readibility
+        k = self.k
 
         D_kernels = []
         for i in range(len(X)):
             # If its the first one, create structure
-            if i == 1:
+            if i == 0:
                 # Computes the kernels
-                D_kernels = self.create_kernels(X[i])
+                D_kernels = self.create_kernels(X[i][0])
             # else, append the result
             else:
-                D_kernels = D_kernels + self.create_kernels(X[i])
+                D_kernels = D_kernels + self.create_kernels(X[i][0])
         # here, D_kernels should be a np.array of three dimensions
         D_kernels = np.array(D_kernels)
 
         # TODO(EXPLANATION OF THIS?)
         # Explain what each variable is
-        alpha_K = 1/np.shape(D_kernels[2]) * np.ones(1, np.shape[D_kernels[2]])
-        dist_X = np.mean(D_kernels, axis=2)
+        alpha_K = 1 / (D_kernels.shape[0] * np.ones(D_kernels.shape[0]))
+        dist_X = np.mean(D_kernels, axis=0)
 
         # Reordenament per distancies i indexos
-        dist_X1 = np.sort(Dist_X, axis=1)
-        idx = np.argsort(Dist_X, axis=1)
+        dist_X1 = np.sort(dist_X, axis=1)
+        idx = np.argsort(dist_X, axis=1)
 
-        # Podria ser el resultat
-        A = np.zeros(X.shape[0])
-        di = dist_X1[:, 1:(k+1)]
+        # Variable preparation
+        A = np.zeros((n_subj, n_subj))
+        di = dist_X1[:, 1:(k+2)]
         rr = 0.5*(k*di[:, k] - np.sum(di[:, :k], axis=1))
-        id = idx[:, 1:k+1]
-        temp = di[:, k] / (k*di[:, k] - np.sum(di[:, k], axis=1) + self.eps)
-        a = np.tile(list(range(0, X.shape[0]-1)), (1, id.shape[1]))
-
+        id = np.array(idx[:, 1:k+2])
+        temp = (-di.T + di[:, k]) / (k*di[:, k] - np.sum(di[:, 0:k], axis=1) + self.eps)
+        temp = temp.T
+        a = np.tile(list(range(0, n_subj)), (id.shape[1], 1))
+    
         # introduir temp a A
-        A[a.flat, id.flat] = temp
+        A[a.T.flat, id.flat] = temp.flat
 
-        r = mean(rr)
+        r = np.mean(rr)
 
         lmbda = np.max(np.mean(rr), 0)
         # Check for NaNs in A
@@ -295,7 +301,7 @@ class CIMLR(object):
         Kernels = []
 
         # Compute euclidan distance between each subject
-        Diff = sp.spatial.distance.cdist(X, X, 'euclidean')
+        Diff = sp.spatial.distance.cdist(X, X, 'sqeuclidean')
         # Sort the results by distance
         T = np.sort(Diff, axis=1)
         [m, n] = np.shape(Diff)
@@ -303,25 +309,31 @@ class CIMLR(object):
         # Iterate to create the kernels
         for l in self.k_list:
             # We compute the variance from a subset of the population
-            # with the top k neighours
-            if k_list[l] < X.shape[1]:
-                TT = np.mean(T[:, list(range(1, l))], axis=1) + self.eps
-                Sig = (np.tile(TT, (1, n)) + np.tile(TT.T, (n, 1))) / 2
-                Sig = Sig * (Sig > eps) + eps
-                # Compute the actual kernel
+            # with the top k neighours (see paper, Figure 4)
+            if l < X.shape[1]:
+                TT = np.mean(T[:, list(range(1, l+1))], axis=1) + self.eps
+                Sig = (np.tile(TT, (n, 1)) + np.tile(TT, (n, 1)).T) / 2
+                Sig = Sig * (Sig > self.eps) + self.eps
                 for j in self.sigma:
-                    W = norm.pdf(Diff, 0, j*Sig)
+                    # Compute the actual kernel, evaluating norm pdf over the euclidean dist
+                    W = sp.stats.norm.pdf(Diff, 0, j*Sig)
                     # To make sure it is symmetric
                     K = (W + W.T) / 2
                     Kernels.append(K)
 
-        # Iterate over all kernels to normalize the values
+        # Now, normalize the values of the kernels
+        # This is equivalent to K_ij = K_ij / ( sqrt( K_ii * K_jj )) 
         i = 0
         for K in Kernels:
             k = 1./np.sqrt(np.diag(K) + 1)
-            G = K * (k * k.T)
-            K = (np.tile(np.diag(G), (1, len(G))) + np.tile(np.diag(G), (len(G), 1)) - 2*G) / 2
+            G = K * np.outer(k, k)
+            # Further normalization, to make usre that diagonal is 0
+            K = (np.tile(np.diag(G), (len(G), 1)) + np.tile(np.diag(G), (len(G), 1)).T - 2*G) / 2
+            # Aquest pas es per si de cas i per evitar errors, però normalment el segon terme sempre hauria de ser 0
             Kernels[i] = K - np.diag(np.diag(K))
+            i = i + 1
+    
+        return Kernels
 
     def umkl_bo(self, D, beta):
         """Function to optimize MKL, i guess
