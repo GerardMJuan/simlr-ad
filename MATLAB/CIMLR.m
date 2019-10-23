@@ -228,7 +228,6 @@ alpha = 0.8;
 beta = 2;
 d = (1-alpha)*d./(1-alpha*d.^beta);
 
-
 D = diag(real(d));
 W = U*D*U';
 

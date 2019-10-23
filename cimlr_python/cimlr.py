@@ -223,25 +223,30 @@ class CIMLR(object):
         http://snap.stanford.edu/ne/
         """
         A = A - np.diag(np.diag(A))
-        P = self.dominate_set(np.abs(A), np.min(K, axis=len(A-1)))
-        DD = np.sum(abs(P.T))
-        P = P + np.eye(len(P)) + np.diag(np.sum(np.abs(P.T)))
+        P = self.dominate_set(np.abs(A), np.minimum(K, len(A)-1)) * np.sign(A)
+        DD = np.sum(abs(P.T), axis = 1)
+        P = P + np.eye(len(P)) + np.diag(DD)
         # Transition matrix creation
         P = self.transition_fields(P)
 
         # Compute eigenvalues
-        U, D = np.linalg.eig(P)
-        d = np.real(np.diag(D)+self.eps)
+        eigenValues, eigenVectors = np.linalg.eig(P)
+        idx = eigenValues.argsort()   
+        eigenValues = eigenValues[idx]
+        eigenVectors = eigenVectors[:,idx]
+        d = np.real(eigenValues+self.eps)
 
         # What are those parameters
+        # Explore those parameters, are related to similarity enhancement
         alpha = 0.8
         beta = 2
 
-        d = (1-alpha)*d / (1-alpha*d ^ beta)
+        d = (1-alpha)*d / (1-alpha*np.power(d, beta))
 
         D = np.diag(np.real(d))
-        W = U*D*U.T
-        W = W * (1-np.eye(len(W))) / (1-np.diag(W))
+        # Two matrix multiplications
+        W = np.matmul(np.matmul(eigenVectors.T, D), eigenVectors)
+        W = (W * (1-np.eye(len(W)))) / np.tile(1-np.diag(W), (len(W), 1))
         W = D * W
         W = (W + W.T) / 2
 
@@ -255,21 +260,26 @@ class CIMLR(object):
         w = w*len(w)
         # w = double(w)
         D = np.sum(np.abs(w), axis=1) + self.eps
-        D = 1./D
-        return D*(w*D)
+        D = np.diag(1/D)
+        r = np.matmul(D, w)
+        return r
 
     def dominate_set(self, aff_matrix, knn_n):
         """Part of the Network Enhancement code.
 
         https://www.nature.com/articles/s41467-018-05469-x
         """
-        A = np.sort(aff_matrix, axis=1)[::-1]
-        B = np.argsort(aff_matrix, axis=1)[::-1]
+        A = np.sort(aff_matrix, axis=1)
+        # To sort descending order
+        A = np.fliplr(A)
+        # Negative to get the indices also in descending order
+        B = np.argsort(-aff_matrix, axis=1)
         res = A[:, :knn_n]
         indexs = list(range(0, len(aff_matrix)))
-        loc = B[:, knn_n]
+        indexs = np.tile(indexs, (1, knn_n))
+        loc = B[:, :knn_n]
         pN = np.zeros(aff_matrix.shape)
-        pN[indexs.flat, loc.flat] = res
+        pN[np.array(indexs), np.array(loc).flatten('F')] = res.flatten('F')
         pN = (pN + pN.T) / 2
         return pN
 
@@ -278,12 +288,14 @@ class CIMLR(object):
 
         https://www.nature.com/articles/s41467-018-05469-x
         """
-        zeroindex = np.where(np.sum(W, axis=1) == 0)
-        W = W*len(W)
-        W = NE_dn(W)
-        w = np.sqrt(np.sum(np.abs(W)) + self.eps)
+        zeroindex = np.where(np.sum(w, axis=1) == 0)
+        W = w*len(w)
+        W = self.NE_dn(W)
+        # Need to transpose to correct different operation in Python
+        W = W
+        w = np.sqrt(np.sum(np.abs(W), axis=1) + self.eps)
         W = W / w
-        W = W * W.T
+        W = np.matmul(W, W.T)
         W[zeroindex, :] = 0
         W[:, zeroindex] = 0
         return W
