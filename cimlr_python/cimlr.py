@@ -337,14 +337,13 @@ class CIMLR(object):
         # This is equivalent to K_ij = K_ij / ( sqrt( K_ii * K_jj )) 
         i = 0
         for K in Kernels:
-            k = 1./np.sqrt(np.diag(K) + 1)
-            G = K * np.outer(k, k)
+            k = 1/np.sqrt(np.diag(K) + 1)
+            G = K * (np.outer(k, k.T))
             # Further normalization, to make usre that diagonal is 0
-            K = (np.tile(np.diag(G), (len(G), 1)) + np.tile(np.diag(G), (len(G), 1)).T - 2*G) / 2
+            K = (np.tile(np.diag(G), (len(G), 1)).T + np.tile(np.diag(G), (len(G), 1)) - 2*G) / 2
             # Aquest pas es per si de cas i per evitar errors, però normalment el segon terme sempre hauria de ser 0
             Kernels[i] = K - np.diag(np.diag(K))
             i = i + 1
-    
         return Kernels
 
     def umkl_bo(self, D, beta):
