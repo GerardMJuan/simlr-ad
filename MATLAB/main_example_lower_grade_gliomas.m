@@ -44,8 +44,14 @@ rng(32655,'twister'); %%% for reproducibility
 C = 3; %%% best number of clusters
 rng(43556,'twister'); %%% for reproducibility
  [y, S, F, ydata] = CIMLR(alldata,C,10);
+ 
+csvwrite('true_results.csv',y)
 
+ % visualization
+figure;
+gscatter(ydata(:,1),ydata(:,2),y);
+ 
 % perform CIMLR Feature Ranking
-rng(12844,'twister'); %%% for reproducibility
-mydata = [alldata{1} alldata{2} alldata{3} alldata{4}];
-[aggR,pval] = CIMLR_Feature_Ranking(S,mydata);
+%rng(12844,'twister'); %%% for reproducibility
+%mydata = [alldata{1} alldata{2} alldata{3} alldata{4}];
+%[aggR,pval] = CIMLR_Feature_Ranking(S,mydata);

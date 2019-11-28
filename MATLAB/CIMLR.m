@@ -59,6 +59,7 @@ L0= D0-S;
 [F, temp, evs]=eig1(L0, c, 0);
 F = NE_dn(F,'ave');
 for iter = 1:NITER
+    iter
     distf = L2_distance_1(F',F');
     A = zeros(num);
     %b = idx(:,2:(2*k+2));
@@ -87,6 +88,7 @@ for iter = 1:NITER
     alphaK0 = alphaK0/sum(alphaK0);
     alphaK = (1-beta)*alphaK + beta*alphaK0;
     alphaK = alphaK/sum(alphaK);
+    
     fn1 = sum(ev(1:c));
     fn2 = sum(ev(1:c+1));
     converge(iter) = fn2-fn1;
@@ -181,11 +183,14 @@ function D_Kernels = multipleK(x)
 
 N = size(x,1);
 KK = 0;
-sigma = [50:-5:30];
+%sigma = [50:-5:30];
+%allk = 40:5:50;
+sigma = [2:-0.5:1];
+allk = 10:10:30;
+
 Diff = (dist2(x));
 [T,INDEX]=sort(Diff,2);
 [m,n]=size(Diff);
-allk = 40:5:50;
 t=1;
 
 for l = 1:length(allk)
@@ -284,7 +289,6 @@ function ydata = tsne_p_bo(P, labels, no_dims)
     
     % Run the iterations
     for iter=1:max_iter
-        
         % Compute joint probability that point i and j are neighbors
         sum_ydata = sum(ydata .^ 2, 2);
         num = 1 ./ (1 + bsxfun(@plus, sum_ydata, bsxfun(@plus, sum_ydata', -2 * (ydata * ydata')))); % Student-t distribution
@@ -315,7 +319,7 @@ function ydata = tsne_p_bo(P, labels, no_dims)
         % Print out progress
         if ~rem(iter, 10)
             cost = const - sum(P(:) .* log(Q(:)));
-            disp(['Iteration ' num2str(iter) ': error is ' num2str(cost)]);
+            %disp(['Iteration ' num2str(iter) ': error is ' num2str(cost)]);
         end
         
         % Display scatter plot (maximally first three dimensions)

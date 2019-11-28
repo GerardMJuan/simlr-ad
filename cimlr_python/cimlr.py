@@ -9,8 +9,8 @@ import numpy as np
 import scipy as sp
 from sklearn.cluster import KMeans
 import sys
-from .utils import projection_simplex_bisection
-
+from .utils import euclidean_proj_simplex_it
+from scipy.linalg import eig, eigh
 
 class CIMLR(object):
     """Implements CIMLR algorithm.
@@ -34,6 +34,9 @@ class CIMLR(object):
         # parameters of the kernel creation
         self.sigma = list(range(50, 25, -5))
         self.k_list = list(range(40, 55, 5))
+
+        # set beta parameter
+        self.beta = 0.8
 
         # Initialize fiting values
         self.fitted = False
@@ -72,7 +75,7 @@ class CIMLR(object):
 
         # TODO(EXPLANATION OF THIS?)
         # Explain what each variable is
-        alpha_K = 1 / (D_kernels.shape[0] * np.ones(D_kernels.shape[0]))
+        alpha_k = 1 / (D_kernels.shape[0] * np.ones(D_kernels.shape[0]))
         dist_X = np.mean(D_kernels, axis=0)
 
         # Reordenament per distancies i indexos
@@ -106,28 +109,34 @@ class CIMLR(object):
         L0 = D0 - S
 
         # Eigen solver of L0
-        F, evs = self.eig_nc(L, c)
+        F, evs = self.eig_nc(L0, self.C)
         F = self.NE_dn(F)
         # Structure to store convergence values
         converge = []
 
+        # Structure to save output
+
         # Start iteration to solve the optimization
         for i in range(self.niter):
-            distf = np.sqrt(sp.spatial.distance.cdist(F', F', 'euclidean'))
+            print('Iteration ' + str(i))
+            distf = sp.spatial.distance.cdist(F, F, 'sqeuclidean')
             # Optimize A and S
             # Using newton's method of a simplex projection
             # Step 1
-            A = np.zeros(num)
+            A = np.zeros([n_subj, n_subj])
             # Aqui potser hi ha problemes de size
-            b = idx[:, 1:]
-            inda = A[list(range(1, num)), b]
-            ad = np.reshape((dist_X[inda]+lmbda*distf(inda))/2/r, (num, b.shape[1]))
+            b = idx[:, 1:].T
+            a = np.tile(range(0, n_subj), (1, b.shape[0]))
+            # inda = A[list(range(1, n_subj)), b]
+            # La primera columna es correcta, a la segona se li va la olla que flipes.
+            ad = np.reshape((dist_X[b.flatten(), a.flatten()]+lmbda*distf[a.flatten(), b.flatten()])/2/r, (b.shape[0], n_subj)).T
             # Compute projection
-            ad = projection_simplex_bisection(-ad.T).T
-            A[inda] = ad
+            ad = euclidean_proj_simplex_it(ad)
+            ad = np.array(ad)
+            A[a.flatten(), b.flatten()] = ad.flatten()
             # Remove NaNs
             A[np.isnan(A)] = 0
-            S = (1-beta)*A+beta*S
+            S = (1-self.beta)*A+self.beta*S
             S = self.network_diffusion(S, k)
             S = (S + S.T)/2
             
@@ -138,16 +147,17 @@ class CIMLR(object):
             L = D - S
             F_old = F
             # Compute again with new L
-            F, ev = self.eig_nc(L, c)
+            F, ev = self.eig_nc(L, self.C)
             F = self.NE_dn(F)
             # Update F using also old F
-            F = (1-beta)*F_old + beta*F
+            F = (1-self.beta)*F_old + self.beta*F
             # Save current eigenvalues
-            evs.append(ev)
-
-            for j in range(D_kernels.shape[2]):
-                temp = (eps+D_kernels[:, :, j]*(eps+S))
-                DD[j] = np.mean(np.sum(temp))
+            evs = np.vstack([evs, ev])
+            
+            DD = []
+            for j in range(D_kernels.shape[0]):
+                temp = (self.eps+D_kernels[j, :, :]*(self.eps+S))
+                DD.append(np.mean(np.sum(temp)))
 
             # Alpha
             # Step 3 fix S and L to update the weights of the kernels
@@ -155,48 +165,52 @@ class CIMLR(object):
             alpha_k0 = self.umkl_bo(DD)
             alpha_k0 = alpha_k0/np.sum(alpha_k0)
             # update it
-            alpha_k = (1-beta)*alpha_k + beta*alpha_k0
+            alpha_k = (1-self.beta)*alpha_k0 + self.beta*alpha_k0
 
             # Check convergence
-            fn1 = np.sum(ev[0:c-1])
-            fn2 = np.sum(ev[0:c])
+            fn1 = np.sum(ev[:self.C])
+            fn2 = np.sum(ev[:self.C+1])
 
             converge.append(fn2-fn1)
-            if i < 10:
+
+            if i < 9:
                 if(ev[-1] > 0.00001):
                     lmbda = 1.5*lmbda
                     r = r/1.01
+            else:
                 if (converge[i] > 1.01*converge[i-1]):
                     S = S_old
                     if converge[i-1] > 0.2:
                         print("Maybe you should set a larger value of c")
                     break
+
             # Update S
             S_old = S
-            dist_X = self.Kbeta(D_Kernels, alpha_K.T)
+            dist_X = self.Kbeta(D_kernels, alpha_k.T)
             dist_X1 = np.sort(dist_X)
             idx = np.argsort(dist_X)
 
         # Algorithm fitted
         self.fitted = True
         LF = F
-        D = np.diag(np.sum(S, order))
+        # 2 is the order
+        D = np.diag(np.sum(S, 1))
         L = D - S
         # Last eigenvalue computation
         U, D = np.linalg.eig(L)
 
         # Compute kmeans on the last distance matrix
         # Two steps kmeans, like in the original paper
-        kmeans_1 = KMeans(n_clusters=c, n_init=200)
-        kmeans_1.fit(X)
-        y = KMeans(n_clusters=c, init=kmeans_1.cluster_centers_,).fit_predict(X)
+        kmeans_1 = KMeans(n_clusters=self.C, n_init=200)
+        kmeans_1.fit(LF)
+        y = KMeans(n_clusters=self.C, init=kmeans_1.cluster_centers_,).fit_predict(LF)
 
         # Update the fitting parameters
         self.y = y
         self.S = S
-        self.alpha = alpha_K
+        self.alpha = alpha_k
 
-    def eig_nc(self, A, c):
+    def eig_nc(self, L, c):
         """Computes eigenvectors and eigenvalues.
 
         Returns the first c.
@@ -208,9 +222,9 @@ class CIMLR(object):
         idx = np.argsort(eigenval)
         # We pick only the first c eigenvectors and values
         # with c being n clusters
-        idx1 = np.diag(idx)
+        idx1 = idx[:c]
         eigvec = np.real(eigenvec[:, idx1])
-        eigval_full = eigenval(idx)
+        eigval_full = eigenval[idx]
         return eigvec, eigval_full
 
     def network_diffusion(self, A, K):
@@ -230,10 +244,11 @@ class CIMLR(object):
         P = self.transition_fields(P)
 
         # Compute eigenvalues
-        eigenValues, eigenVectors = np.linalg.eig(P)
-        idx = eigenValues.argsort()   
-        eigenValues = eigenValues[idx]
-        eigenVectors = eigenVectors[:,idx]
+        eigenValues, eigenVectors = eigh(P)
+        # put correct order
+        # idx = np.argsort(eigenValues)
+        # eigenValues = eigenValues[idx]
+        # eigenVectors = eigenVectors[:, idx]
         d = np.real(eigenValues+self.eps)
 
         # What are those parameters
@@ -245,9 +260,9 @@ class CIMLR(object):
 
         D = np.diag(np.real(d))
         # Two matrix multiplications
-        W = np.matmul(np.matmul(eigenVectors.T, D), eigenVectors)
-        W = (W * (1-np.eye(len(W)))) / np.tile(1-np.diag(W), (len(W), 1))
-        W = D * W
+        W = np.matmul(np.matmul(eigenVectors, D), eigenVectors.T)
+        W = (W * (1-np.eye(len(W)))) / np.tile(1-np.diag(W), (len(W), 1)).T
+        W = np.matmul(D, W)
         W = (W + W.T) / 2
 
         return W
@@ -346,16 +361,18 @@ class CIMLR(object):
             i = i + 1
         return Kernels
 
-    def umkl_bo(self, D, beta):
+    def umkl_bo(self, D, beta = False):
         """Function to optimize MKL, i guess
 
         by the name lmao
         """
+        if not beta:
+            beta = 1 / len(D)
         tol = 1e-4
         u = 150
         logU = np.log(u)
         H, thisP = self.Hbeta(D, beta)
-        beta_min = -np.inf
+        betamin = -np.inf
         beta_max = np.inf
         # Evaluate whether the perplexity is within tolerance
         Hdiff = H - logU
@@ -365,10 +382,10 @@ class CIMLR(object):
             # if not, decrease or increase precision
             if Hdiff > 0:
                 betamin = beta
-                if np.isinf(betamax):
+                if np.isinf(beta_max):
                     beta = beta * 2
                 else:
-                    beta = (beta+betamax) / 2
+                    beta = (beta+beta_max) / 2
             else:
                 if np.isinf(betamin):
                     beta = beta / 2
@@ -384,7 +401,7 @@ class CIMLR(object):
 
         Should study what it does
         """
-        D = (D-np.min(D)) / (np.max(D) - np.min(D)+eps)
+        D = (D-np.min(D)) / (np.max(D) - np.min(D)+self.eps)
         P = np.exp(-D*beta)
         sumP = np.sum(P)
         H = np.log(sumP) + beta * np.sum(D * P) / sumP
@@ -397,12 +414,12 @@ class CIMLR(object):
         K = Matrices (n x n x M)
         w = weights (M * 1)
         """
-        K_final = None
+        K_final = []
 
-        for i in range(W):
-            k = K[:, :, i]
+        for i in range(W.shape[0]):
+            k = K[i, :, :]
             w = W[i]
-            if not K_final:
+            if len(K_final) == 0:
                 K_final = k*w
             else:
                 K_final = K_final + k*w
