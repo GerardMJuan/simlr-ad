@@ -92,6 +92,7 @@ for iter = 1:NITER
     fn1 = sum(ev(1:c));
     fn2 = sum(ev(1:c+1));
     converge(iter) = fn2-fn1;
+    fn2-fn1
     if iter<10
         if (ev(end) > 0.00001)
             lambda = 1.5*lambda;
@@ -130,6 +131,33 @@ timeOurs = toc(t0);
 y = litekmeans(F,c,'Start',center);
 ydata = tsne_p_bo(S);
 
+end
+
+function x = projsplx(y)
+% project an n-dim vector y to the simplex Dn
+% Dn = { x : x n-dim, 1 >= x >= 0, sum(x) = 1}
+% (c) Xiaojing Ye
+% xyex19@gmail.com
+%
+% Algorithm is explained as in the linked document
+% http://arxiv.org/abs/1101.6081
+% or
+% http://ufdc.ufl.edu/IR00000353/
+%
+% Jan. 14, 2011.
+m = length(y); bget = false;
+s = sort(y,'descend'); tmpsum = 0;
+for ii = 1:m-1
+    tmpsum = tmpsum + s(ii);
+    tmax = (tmpsum - 1)/ii;
+    if tmax >= s(ii+1)
+        bget = true;
+        break;
+    end
+end
+    
+if ~bget, tmax = (tmpsum + s(m) -1)/m; end;
+x = max(y-tmax,0);
 end
 
 
@@ -183,10 +211,10 @@ function D_Kernels = multipleK(x)
 
 N = size(x,1);
 KK = 0;
-%sigma = [50:-5:30];
-%allk = 40:5:50;
-sigma = [2:-0.5:1];
-allk = 10:10:30;
+sigma = [50:-5:30];
+allk = 40:5:50;
+%sigma = [2:-0.5:1];
+%allk = 10:10:30;
 
 Diff = (dist2(x));
 [T,INDEX]=sort(Diff,2);
@@ -218,8 +246,6 @@ end
 end
 
 
-
-%
 function W = Network_Diffusion(A, K)
 %K = min(2*K, round(length(A)/10));
 A = A-diag(diag(A));
@@ -235,7 +261,6 @@ d = (1-alpha)*d./(1-alpha*d.^beta);
 
 D = diag(real(d));
 W = U*D*U';
-
 W = (W.*(1-eye(length(W))))./repmat(1-diag(W),1,length(W));
 D=sparse(1:length(DD),1:length(DD),DD);
 W=D*(W);

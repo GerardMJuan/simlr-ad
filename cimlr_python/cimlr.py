@@ -47,6 +47,7 @@ class CIMLR(object):
         self.S = None
         # Weights of the kernels
         self.alpha = None
+        self.F = None
 
     def fit(self, X, normalize=False):
         """Fit the algorithm with the data provided.
@@ -76,7 +77,7 @@ class CIMLR(object):
         # TODO(EXPLANATION OF THIS?)
         # Explain what each variable is
         alpha_k = 1 / (D_kernels.shape[0] * np.ones(D_kernels.shape[0]))
-        dist_X = np.mean(D_kernels, axis=0)
+        dist_X = np.mean(D_kernels, axis=0, dtype=np.float64)
 
         # Reordenament per distancies i indexos
         dist_X1 = np.sort(dist_X, axis=1)
@@ -87,26 +88,37 @@ class CIMLR(object):
         di = dist_X1[:, 1:(k+2)]
         rr = 0.5*(k*di[:, k] - np.sum(di[:, :k], axis=1))
         id = np.array(idx[:, 1:k+2])
-        temp = (-di.T + di[:, k]) / (k*di[:, k] - np.sum(di[:, 0:k], axis=1) + self.eps)
-        temp = temp.T
+
+        temp_a = np.tile(di[:, k], (di.shape[1], 1)).T - di
+        temp_b = np.tile(k*di[:, k] - np.sum(di[:, :k], axis=1) + self.eps, (di.shape[1], 1)).T
+
+        temp = temp_a / temp_b
         a = np.tile(list(range(0, n_subj)), (id.shape[1], 1))
     
         # introduir temp a A
         A[a.T.flat, id.flat] = temp.flat
-
         r = np.mean(rr)
-
         lmbda = np.max(np.mean(rr), 0)
         # Check for NaNs in A
         A[np.isnan(A)] = 0
 
         # Initializing all variables
-        S0 = np.max(np.max(dist_X)) - dist_X
+        S0 = np.max(dist_X) - dist_X
+
+
+        LFnew = sp.io.loadmat("MATLAB/data/S0.mat")
+        S0a = LFnew["S0"]
+        S0 = S0a.astype(np.float64)
+        
         S0 = self.network_diffusion(S0, k)
         S0 = self.NE_dn(S0)
         S = (S0 + S0.T) / 2
         D0 = np.diag(np.sum(S, 1))
         L0 = D0 - S
+
+        LFnew = sp.io.loadmat("MATLAB/data/L0.mat")
+        LFa = LFnew["L0"]
+        L0 = LFa.astype(np.float64)
 
         # Eigen solver of L0
         F, evs = self.eig_nc(L0, self.C)
@@ -127,12 +139,10 @@ class CIMLR(object):
             # Aqui potser hi ha problemes de size
             b = idx[:, 1:].T
             a = np.tile(range(0, n_subj), (1, b.shape[0]))
-            # inda = A[list(range(1, n_subj)), b]
-            # La primera columna es correcta, a la segona se li va la olla que flipes.
             ad = np.reshape((dist_X[b.flatten(), a.flatten()]+lmbda*distf[a.flatten(), b.flatten()])/2/r, (b.shape[0], n_subj)).T
             # Compute projection
-            ad = euclidean_proj_simplex_it(ad)
-            ad = np.array(ad)
+            ad = euclidean_proj_simplex_it(-ad)
+            ad = np.array(ad).T
             A[a.flatten(), b.flatten()] = ad.flatten()
             # Remove NaNs
             A[np.isnan(A)] = 0
@@ -157,7 +167,7 @@ class CIMLR(object):
             DD = []
             for j in range(D_kernels.shape[0]):
                 temp = (self.eps+D_kernels[j, :, :]*(self.eps+S))
-                DD.append(np.mean(np.sum(temp)))
+                DD.append(np.mean(np.sum(temp, axis=1)))
 
             # Alpha
             # Step 3 fix S and L to update the weights of the kernels
@@ -170,9 +180,8 @@ class CIMLR(object):
             # Check convergence
             fn1 = np.sum(ev[:self.C])
             fn2 = np.sum(ev[:self.C+1])
-
+            print(fn2-fn1)
             converge.append(fn2-fn1)
-
             if i < 9:
                 if(ev[-1] > 0.00001):
                     lmbda = 1.5*lmbda
@@ -193,38 +202,68 @@ class CIMLR(object):
         # Algorithm fitted
         self.fitted = True
         LF = F
-        # 2 is the order
+
+        LFnew = sp.io.loadmat("MATLAB/data/LF.mat")
+        LFa = LFnew["LF"]
+        # LF = LFa.astype(np.float64)
+        Snew = sp.io.loadmat("MATLAB/data/Sfinal.mat")
+        Sa = Snew["S"]
+        # S = Sa.astype(np.float64)
+
         D = np.diag(np.sum(S, 1))
         L = D - S
         # Last eigenvalue computation
-        U, D = np.linalg.eig(L)
+        U, D = eigh(L, lower=False)
 
         # Compute kmeans on the last distance matrix
         # Two steps kmeans, like in the original paper
         kmeans_1 = KMeans(n_clusters=self.C, n_init=200)
         kmeans_1.fit(LF)
-        y = KMeans(n_clusters=self.C, init=kmeans_1.cluster_centers_,).fit_predict(LF)
+        finaldist = sp.spatial.distance.cdist(kmeans_1.cluster_centers_, LF, 'euclidean')
+        initpoints = np.argmin(finaldist, axis=1)
+        centers = LF[initpoints, :]      
+
+        F = self.tsne(S, no_dims=3, Y=D[:, :self.C])
+        y = KMeans(n_clusters=self.C, init=centers).fit_predict(F)
+
+        ydata = self.tsne(S, no_dims=2)
 
         # Update the fitting parameters
         self.y = y
         self.S = S
+        self.F = F
         self.alpha = alpha_k
+    
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        from matplotlib.lines import Line2D
+        from matplotlib.colors import ListedColormap
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        sns.set_style("darkgrid")
+
+        flatui = ["#9b59b6", "#3498db", "#95a5a6", "#e74c3c"]
+        my_cmap = ListedColormap(sns.color_palette(flatui).as_hex())
+
+        plt.scatter(ydata[:, 0], ydata[:, 1], c=y, marker='o', edgecolor='black', linewidth=0.1, alpha=0.8)
+        plt.axis('tight')
+        plt.show()
 
     def eig_nc(self, L, c):
         """Computes eigenvectors and eigenvalues.
 
         Returns the first c.
         """
+        L = np.maximum(L, L.T)
         # solve the eigenvectors
-        eigenval, eigenvec = np.linalg.eig(L)
-
+        eigenval, eigenvec = eigh(L)
+        # eigenvec[:, 0] = -eigenvec[:, 0]
         # sort them
-        idx = np.argsort(eigenval)
+        # idx = np.argsort(eigenval)
         # We pick only the first c eigenvectors and values
         # with c being n clusters
-        idx1 = idx[:c]
-        eigvec = np.real(eigenvec[:, idx1])
-        eigval_full = eigenval[idx]
+        # idx1 = idx[:c]
+        eigvec = np.real(eigenvec[:, :c])
+        eigval_full = eigenval
         return eigvec, eigval_full
 
     def network_diffusion(self, A, K):
@@ -233,38 +272,38 @@ class CIMLR(object):
 
         To enhance the similarity matrix S and reduce effects of
         noise and dropouts
-        For more information:
-        http://snap.stanford.edu/ne/
+        F
+         or more information:
+        0
         """
         A = A - np.diag(np.diag(A))
         P = self.dominate_set(np.abs(A), np.minimum(K, len(A)-1)) * np.sign(A)
-        DD = np.sum(abs(P.T), axis = 1)
+        DD = np.sum(abs(P.T), axis = 0)
         P = P + np.eye(len(P)) + np.diag(DD)
         # Transition matrix creation
         P = self.transition_fields(P)
 
         # Compute eigenvalues
-        eigenValues, eigenVectors = eigh(P)
+        eigenValues, eigenVectors = eig(P)
         # put correct order
-        # idx = np.argsort(eigenValues)
-        # eigenValues = eigenValues[idx]
-        # eigenVectors = eigenVectors[:, idx]
-        d = np.real(eigenValues+self.eps)
+        idx = np.argsort(eigenValues)
+        eigenValues = eigenValues[idx]
+        eigenVectors = eigenVectors[:, idx]
+        d = np.real(eigenValues + self.eps)
+        # eigenVectors[:, 0] = -eigenVectors[:, 0] 
 
         # What are those parameters
         # Explore those parameters, are related to similarity enhancement
         alpha = 0.8
-        beta = 2
+        beta = 2.0
 
-        d = (1-alpha)*d / (1-alpha*np.power(d, beta))
-
+        d = (1.0-alpha)*d / (1.0-alpha*np.power(d, beta))
         D = np.diag(np.real(d))
         # Two matrix multiplications
-        W = np.matmul(np.matmul(eigenVectors, D), eigenVectors.T)
-        W = (W * (1-np.eye(len(W)))) / np.tile(1-np.diag(W), (len(W), 1)).T
-        W = np.matmul(D, W)
+        W = eigenVectors @ D @ eigenVectors.T
+        W = (W * (1-np.eye(len(W)))) / (np.tile(1-np.diag(W), (len(W), 1)).T)
+        W = np.matmul(D, W.T)
         W = (W + W.T) / 2
-
         return W
 
     def NE_dn(self, w):
@@ -291,10 +330,10 @@ class CIMLR(object):
         B = np.argsort(-aff_matrix, axis=1)
         res = A[:, :knn_n]
         indexs = list(range(0, len(aff_matrix)))
-        indexs = np.tile(indexs, (1, knn_n))
+        indexs = np.tile(indexs, (knn_n, 1)).T
         loc = B[:, :knn_n]
         pN = np.zeros(aff_matrix.shape)
-        pN[np.array(indexs), np.array(loc).flatten('F')] = res.flatten('F')
+        pN[indexs.flat, np.array(loc).flat] = res.flat
         pN = (pN + pN.T) / 2
         return pN
 
@@ -307,8 +346,7 @@ class CIMLR(object):
         W = w*len(w)
         W = self.NE_dn(W)
         # Need to transpose to correct different operation in Python
-        W = W
-        w = np.sqrt(np.sum(np.abs(W), axis=1) + self.eps)
+        w = np.sqrt(np.sum(np.abs(W), axis=0) + self.eps)
         W = W / w
         W = np.matmul(W, W.T)
         W[zeroindex, :] = 0
@@ -391,10 +429,74 @@ class CIMLR(object):
                     beta = beta / 2
                 else:
                     beta = (beta + betamin) / 2
+
             H, thisP = self.Hbeta(D, beta)
             Hdiff = H - logU
             i += 1
         return thisP
+
+
+    def x2p(self, D=np.array([]), tol=1e-4, perplexity=150.0):
+        """
+            Performs a binary search to get P-values in such a way that each
+            conditional Gaussian has the same perplexity.
+        """
+
+        # Initialize some variables
+        # print("Computing pairwise distances...")
+        # (n, d) = X.shape
+        # sum_X = np.sum(np.square(X), 1)
+        # D = np.add(np.add(-2 * np.dot(X, X.T), sum_X).T, sum_X)
+        H, P = self.Hbeta(D, beta)
+        (n, n) = D.shape
+        P = np.zeros((n, n))
+        beta = np.ones((n, 1))
+        logU = np.log(perplexity)
+
+        # Loop over all datapoints
+        for i in range(n):
+
+            # Print progress
+            if i % 500 == 0:
+                print("Computing P-values for point %d of %d..." % (i, n))
+
+            # Compute the Gaussian kernel and entropy for the current precision
+            betamin = -np.inf
+            betamax = np.inf
+            Di = D[i, np.concatenate((np.r_[0:i], np.r_[i+1:n]))]
+            (H, thisP) = Hbeta(Di, beta[i])
+
+            # Evaluate whether the perplexity is within tolerance
+            Hdiff = H - logU
+            tries = 0
+            while np.abs(Hdiff) > tol and tries < 50:
+
+                # If not, increase or decrease precision
+                if Hdiff > 0:
+                    betamin = beta[i].copy()
+                    if betamax == np.inf or betamax == -np.inf:
+                        beta[i] = beta[i] * 2.
+                    else:
+                        beta[i] = (beta[i] + betamax) / 2.
+                else:
+                    betamax = beta[i].copy()
+                    if betamin == np.inf or betamin == -np.inf:
+                        beta[i] = beta[i] / 2.
+                    else:
+                        beta[i] = (beta[i] + betamin) / 2.
+
+                # Recompute the values
+                (H, thisP) = Hbeta(Di, beta[i])
+                Hdiff = H - logU
+                tries += 1
+
+            # Set the final row of P
+            P[i, np.concatenate((np.r_[0:i], np.r_[i+1:n]))] = thisP
+
+        # Return final P-matrix
+        print("Mean value of sigma: %f" % np.mean(np.sqrt(1 / beta)))
+        return P
+
 
     def Hbeta(self, D, beta):
         """Subroutine for umkl_bo.
@@ -403,7 +505,7 @@ class CIMLR(object):
         """
         D = (D-np.min(D)) / (np.max(D) - np.min(D)+self.eps)
         P = np.exp(-D*beta)
-        sumP = np.sum(P)
+        sumP = sum(P)
         H = np.log(sumP) + beta * np.sum(D * P) / sumP
         P = P / sumP
         return H, P
@@ -424,3 +526,80 @@ class CIMLR(object):
             else:
                 K_final = K_final + k*w
         return K_final
+
+
+    def tsne(self, P=np.array([]), no_dims=2, initial_dims=50, perplexity=30.0, Y=None):
+        """
+            Runs t-SNE on the dataset in the NxD array X to reduce its
+            dimensionality to no_dims dimensions. The syntaxis of the function is
+            `Y = tsne.tsne(X, no_dims, perplexity), where X is an NxD NumPy array.
+        """
+
+        # Check inputs
+        if isinstance(no_dims, float):
+            print("Error: array X should have type float.")
+            return -1
+        if round(no_dims) != no_dims:
+            print("Error: number of dimensions should be an integer.")
+            return -1
+
+        # Initialize variables
+        # X = pca(X, initial_dims).real
+        (n, n) = P.shape
+        max_iter = 1000
+        initial_momentum = 0.08
+        final_momentum = 0.1
+        eta = 500
+        min_gain = 0.01
+        if Y is None:
+            Y = np.random.randn(n, no_dims)
+        dY = np.zeros((n, no_dims))
+        iY = np.zeros((n, no_dims))
+        gains = np.ones((n, no_dims))
+
+        # Compute P-values
+        # P = x2p(X, 1e-5, perplexity)
+        P = P + np.transpose(P)
+        P = P / np.sum(P)
+        # P = P * 4.									# early exaggeration
+        P = np.maximum(P, 1e-12)
+
+        # Run iterations
+        for iter in range(max_iter):
+
+            # Compute pairwise affinities
+            sum_Y = np.sum(np.square(Y), 1)
+            num = -2. * np.dot(Y, Y.T)
+            num = 1. / (1. + np.add(np.add(num, sum_Y).T, sum_Y))
+            num[range(n), range(n)] = 0.
+            Q = num / np.sum(num)
+            Q = np.maximum(Q, 1e-12)
+
+            # Compute gradient
+            PQ = P - Q
+            for i in range(n):
+                dY[i, :] = np.sum(np.tile(PQ[:, i] * num[:, i], (no_dims, 1)).T * (Y[i, :] - Y), 0)
+
+            # Perform the update
+            if iter < 20:
+                momentum = initial_momentum
+            else:
+                momentum = final_momentum
+            gains = (gains + 0.2) * ((dY > 0.) != (iY > 0.)) + \
+                    (gains * 0.8) * ((dY > 0.) == (iY > 0.))
+            gains[gains < min_gain] = min_gain
+            iY = momentum * iY - eta * (gains * dY)
+            Y = Y + iY
+            Y = Y - np.tile(np.mean(Y, 0), (n, 1))
+
+            # Compute current value of cost function
+            if (iter + 1) % 10 == 0:
+                C = np.sum(P * np.log(P / Q))
+                print("Iteration %d: error is %f" % (iter + 1, C))
+
+            # Stop lying about P-values
+            # if iter == 100:
+            #    P = P / 4.
+
+        # Return solution
+        return Y

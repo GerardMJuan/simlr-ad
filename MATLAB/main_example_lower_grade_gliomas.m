@@ -3,6 +3,7 @@
 % Original data published in Cancer Genome Atlas Research Network. "Comprehensive, 
 % integrative genomic analysis of diffuse lower-grade gliomas." New England 
 % Journal of Medicine 372.26 (2015): 2481-2498. 
+rng(1714,'twister'); %%% for reproducibility
 
 clear
 clc
@@ -24,6 +25,7 @@ expression = tumor_data.expression;
 expression(expression>10) = 10;
 expression(expression<-10) = -10;
 alldata{4} = expression;
+
 for i = 1:size(alldata{1},2)
     alldata{1}(:,i) = (alldata{1}(:,i) - min(alldata{1}(:,i))) / (max(alldata{1}(:,i)) - min(alldata{1}(:,i)));
     alldata{1}(isnan(alldata{1}(:,i)),i) = 0.5;
@@ -37,15 +39,13 @@ end
 
 % estimate the best number of clusters
 NUMC = 2:15;
-rng(32655,'twister'); %%% for reproducibility
 % [K1, K2] = Estimate_Number_of_Clusters_CIMLR(alldata,NUMC);
 
 % perform CIMLR with the estimated best number of clusters
 C = 3; %%% best number of clusters
-rng(43556,'twister'); %%% for reproducibility
  [y, S, F, ydata] = CIMLR(alldata,C,10);
  
-csvwrite('true_results.csv',y)
+csvwrite('/media/gerard/ae63733d-113b-4d0e-80f1-2307f4418fd01/gerard/Documents/CODE/SIMLR-AD/true_results.csv',y)
 
  % visualization
 figure;

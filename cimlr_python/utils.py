@@ -4,27 +4,6 @@ Utils functions as support
 import numpy as np
 
 
-def projection_simplex_bisection(v, z=1, tau=0.0001, max_iter=1000):
-    """
-    Use bisection to implement the simplex projection
-    """
-    lower = 0
-    upper = np.max(v)
-    current = np.inf
-
-    for it in range(max_iter):
-        if np.abs(current) / z < tau and current < 0:
-            break
-
-        theta = (upper + lower) / 2.0
-        w = np.maximum(v - theta, 0)
-        current = np.sum(w) - z
-        if current <= 0:
-            upper = theta
-        else:
-            lower = theta
-    return w
-
 def euclidean_proj_simplex_it(v, s=1):
     """
     Auxiliar function to iterate over projections.
@@ -32,7 +11,7 @@ def euclidean_proj_simplex_it(v, s=1):
     Compute the projections of each row of v and adds them
     together.
     """
-    ad = [euclidean_proj_l1ball(x) for x in v]
+    ad = [euclidean_proj_simplex(x) for x in v]
     return ad
 
 
@@ -74,10 +53,11 @@ def euclidean_proj_simplex(v, s=1):
     # get the number of > 0 components of the optimal solution
     rho = np.nonzero(u * np.arange(1, n+1) > (cssv - s))[0][-1]
     # compute the Lagrange multiplier associated to the simplex constraint
-    theta = float(cssv[rho] - s) / rho
+    theta = (cssv[rho] - s) / (rho + 1.0)
     # compute the projection by thresholding v using theta
     w = (v - theta).clip(min=0)
     return w
+
 
 def euclidean_proj_l1ball(v, s=1):
     """ Compute the Euclidean projection on a L1-ball
