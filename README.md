@@ -10,8 +10,6 @@ One interesting area to explore is disease subpying. Does the disease behave dif
 1. Identifying possible subgroups of the population where the disease interacts differently with the patient, provoking different symptoms.
 2. Identifying the factors that define those subgroups.
 
-![Overview](images/fig1.png)
-
 This project tackles those two questions. We apply a non-supervised clustering technique \[1\] \[2\] over a space of blood markers, which are not typically used to detect the disease but are inexpensive and easy to obtain.
 
 Detecting relevant subtypes of the disease could lead to a more personalized early treatment. Moreover, if the characteristics defining those subtypes are non-invasive markers, we could be closer to non-invasive testing and could gain more understanding of the hidden processes in the disease.
